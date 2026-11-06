@@ -1,0 +1,914 @@
+<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Грамматика</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Manrope:wght@500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,700&display=swap">
+<style>
+/* Layout: one narrow column for lists and analogy tests. Reading tests widen to two panes on large screens: passage on the left (own scroll), questions on the right. */
+:root {
+  --bg: #F3F4FB;
+  --surface: #FFFFFF;
+  --fg: #161A33;
+  --muted: #5B6285;
+  --line: #DDE0F0;
+  --accent: #3F4FC9;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E6E9FD;
+  --mark: #E0731A;
+  --ok: #17703A;
+  --ok-bg: #E1F2E7;
+  --bad: #B3261E;
+  --bad-bg: #FAE6E4;
+  --warn-bg: #FFF1CC;
+  --warn-fg: #664700;
+  --f-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --f-disp: 'Manrope', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --f-read: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --r: 18px;
+  --shadow: 0 1px 2px rgba(30,40,90,.06), 0 8px 24px -12px rgba(30,40,90,.18);
+  --head-h: 0px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1226; --surface: #181C38; --fg: #E8EAFB; --muted: #9AA2CC; --line: #2A3059;
+    --accent: #8E9BFF; --accent-ink: #0B1033; --accent-soft: #232A5C; --mark: #FFB066;
+    --ok: #6FD18C; --ok-bg: #14301F; --bad: #FF8A80; --bad-bg: #3A1815;
+    --warn-bg: #3A2D0B; --warn-fg: #F1CE7A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1226; --surface: #181C38; --fg: #E8EAFB; --muted: #9AA2CC; --line: #2A3059;
+  --accent: #8E9BFF; --accent-ink: #0B1033; --accent-soft: #232A5C; --mark: #FFB066;
+  --ok: #6FD18C; --ok-bg: #14301F; --bad: #FF8A80; --bad-bg: #3A1815;
+  --warn-bg: #3A2D0B; --warn-fg: #F1CE7A;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+img, svg, video, canvas { max-width: 100%; height: auto; }
+body {
+  background: linear-gradient(180deg, var(--accent-soft) 0, var(--bg) 280px) no-repeat, var(--bg); color: var(--fg);
+  font: 400 1rem/1.55 var(--f-ui);
+  overflow-wrap: break-word;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--accent-soft); }
+.wrap {
+  max-width: 720px; margin: 0 auto;
+  padding-block: 20px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Home */
+.hero { display: grid; gap: 10px; padding: 12px 0 22px; }
+.kicker { font-size: .78rem; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.hero h1 { font: 700 clamp(1.9rem, 6vw, 2.6rem)/1.1 var(--f-disp); }
+.hero p { color: var(--muted); max-width: 52ch; }
+.secs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 14px; }
+.sec {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px 18px;
+  display: grid; gap: 14px; align-content: start; text-align: left; min-width: 0; width: 100%;
+}
+.sec { box-shadow: var(--shadow); }
+.sec:hover { border-color: var(--accent); transform: translateY(-2px); }
+.tile, .card, .score, .qcard, .pane-text { box-shadow: var(--shadow); }
+.sec h2 { font: 700 1.6rem/1.15 var(--f-disp); }
+.sec .desc { color: var(--muted); }
+.sec .stats { display: flex; flex-wrap: wrap; gap: 6px 14px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--accent); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12.5rem), 1fr)); gap: 12px; }
+.tiles.wide { grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
+.tile {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 16px; display: grid; gap: 12px; align-content: start; text-align: left; min-width: 0;
+}
+.tile .num { font: 700 2.1rem/1 var(--f-disp); color: var(--accent); }
+.tile h3 { font: 700 1.15rem/1.25 var(--f-disp); }
+.tile .meta { color: var(--muted); font-size: .9rem; }
+.tile .best { font-weight: 600; font-variant-numeric: tabular-nums; }
+.tile:hover { border-color: var(--accent); }
+.btn {
+  box-shadow: 0 6px 14px -8px var(--accent);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 20px; border-radius: 999px; border: 1.5px solid var(--accent);
+  background: var(--accent); color: var(--accent-ink); font-weight: 600; min-height: 44px;
+}
+.btn.ghost { background: transparent; color: var(--accent); box-shadow: none; }
+.btn.sm { min-height: 40px; padding: 8px 14px; }
+.btn:disabled { opacity: .45; cursor: default; }
+.legend { margin-top: 22px; padding: 14px 16px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); font-size: .92rem; }
+.legend b { color: var(--fg); }
+.list-head { display: grid; gap: 6px; margin-bottom: 18px; }
+.list-head h1 { font: 700 clamp(1.7rem, 5vw, 2.2rem)/1.15 var(--f-disp); }
+.list-head p { color: var(--muted); }
+
+/* Analogy quiz */
+.bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; margin-bottom: 14px; }
+.link { background: none; border: 0; color: var(--accent); font-weight: 600; padding: 8px 0; min-height: 44px; }
+.count { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 600; }
+.dots { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-bottom: 16px; }
+.dot {
+  min-width: 0; min-height: 2.5rem; border-radius: 8px; border: 1.5px solid var(--line);
+  background: var(--surface); font-size: .8rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--muted); padding: 0;
+}
+.dot.cur { border-color: var(--accent); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.dot.ok { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.dot.bad { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px 18px; display: grid; gap: 16px; }
+.eyebrow { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.lead { color: var(--muted); font-size: .92rem; }
+.stem { padding: 14px 16px; border-radius: 10px; background: var(--accent-soft); }
+.pair { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.pc { color: var(--mark); font-weight: 700; }
+.stem .pair { font: 700 clamp(1.45rem, 5.2vw, 2rem)/1.25 var(--f-disp); overflow-wrap: anywhere; }
+.stem .pc { font-size: 1.15em; }
+.opts { display: grid; gap: 10px; }
+.opt {
+  display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 10px; align-items: baseline;
+  width: 100%; text-align: left; padding: 12px 14px; border-radius: 10px;
+  border: 1.5px solid var(--line); background: var(--surface); min-height: 48px;
+}
+.opt:hover { border-color: var(--accent); }
+.opt .ltr {
+  display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%;
+  border: 1.5px solid var(--line); font-weight: 600; font-size: .9rem; align-self: center;
+}
+.opt .pair { font: 500 1.08rem/1.35 var(--f-disp); overflow-wrap: anywhere; }
+.opt.locked { cursor: default; }
+.opt.locked:hover { border-color: var(--line); }
+.opt.ok { border-color: var(--ok); background: var(--ok-bg); }
+.opt.ok .ltr { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.opt.bad { border-color: var(--bad); background: var(--bad-bg); }
+.opt.bad .ltr { background: var(--bad); border-color: var(--bad); color: var(--surface); }
+.opt.dim { opacity: .62; }
+.opt .tag { grid-column: 2; font: 600 .8rem var(--f-ui); }
+.opt.ok .tag { color: var(--ok); }
+.opt.bad .tag { color: var(--bad); }
+
+.fb { border-radius: var(--r); padding: 16px; display: grid; gap: 10px; border: 1.5px solid var(--line); }
+.fb.ok { border-color: var(--ok); background: var(--ok-bg); }
+.fb.bad { border-color: var(--bad); background: var(--bad-bg); }
+.verdict { font-weight: 700; font-size: 1.1rem; }
+.fb.ok .verdict { color: var(--ok); }
+.fb.bad .verdict { color: var(--bad); }
+.why-h { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.rel { font-weight: 600; }
+.why { max-width: 66ch; }
+.note { padding: 10px 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font-size: .92rem; }
+.note.warn { background: var(--warn-bg); color: var(--warn-fg); border-color: transparent; }
+.note b { font-weight: 600; }
+.nav { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+
+.score { display: grid; gap: 12px; padding: 20px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); margin-bottom: 16px; }
+.score .big { font: 700 clamp(2.6rem, 11vw, 3.6rem)/1 var(--f-disp); font-variant-numeric: tabular-nums; color: var(--accent); }
+.meter { height: 10px; border-radius: 6px; background: var(--line); overflow: hidden; }
+.meter > i { display: block; height: 100%; background: var(--accent); }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.tabs { display: flex; gap: 8px; margin: 18px 0 12px; flex-wrap: wrap; }
+.tab { padding: 8px 14px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); font-weight: 600; min-height: 40px; }
+.tab[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.rev { display: grid; gap: 10px; }
+details.item { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+details.item > summary {
+  list-style: none; cursor: pointer; padding: 12px 14px; display: grid;
+  grid-template-columns: 2.2rem minmax(0, 1fr) auto; gap: 10px; align-items: baseline;
+}
+details.item > summary::-webkit-details-marker { display: none; }
+.qn { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--muted); }
+details.item .pair { font: 700 1.1rem/1.3 var(--f-disp); overflow-wrap: anywhere; }
+.chip { font-size: .78rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.bad { background: var(--bad-bg); color: var(--bad); }
+.chip.skip { background: var(--line); color: var(--muted); }
+.item .body { padding: 2px 14px 14px; display: grid; gap: 10px; }
+.ans { display: grid; gap: 4px; font-size: .95rem; }
+.ans .pair { font: 500 1.02rem/1.35 var(--f-disp); }
+.ans b { font-weight: 600; }
+
+.timer.sm { font-size: 1rem; padding: 6px 10px; min-width: 4.4rem; }
+.gt { white-space: pre-line; overflow-wrap: anywhere; }
+.gt u { text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.opt .gt { font: 500 1.05rem/1.4 var(--f-disp); }
+.gr .stem .gt { font: 600 1.2rem/1.5 var(--f-disp); }
+details.item .gt { font: 600 1rem/1.35 var(--f-disp); }
+
+.gate { max-width: 26rem; margin: 8vh auto 0; }
+.gate h1 { font: 700 clamp(1.7rem, 6vw, 2.2rem)/1.15 var(--f-disp); }
+.code { width: 100%; font: 700 2rem/1 var(--f-ui); letter-spacing: .5em; text-align: center; padding: 14px 8px 14px calc(8px + .5em); border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); color: var(--fg); font-variant-numeric: tabular-nums; }
+.cerr { color: var(--bad); font-weight: 600; min-height: 1.4em; }
+
+/* Reading comprehension */
+.intro-card { display: grid; gap: 14px; }
+.intro-card h1 { font: 700 clamp(1.6rem, 5vw, 2.2rem)/1.15 var(--f-disp); }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; }
+.fact { padding: 6px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: .9rem; font-variant-numeric: tabular-nums; }
+.rules { margin: 0; padding-left: 1.2rem; display: grid; gap: 6px; color: var(--muted); }
+.rc-head {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--line);
+  display: grid; gap: 8px;
+}
+.rc-row { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; }
+.rc-title { font: 700 1.05rem/1.25 var(--f-disp); min-width: 0; flex: 1 1 10rem; }
+.timer {
+  font: 700 1.35rem/1 var(--f-ui); font-variant-numeric: tabular-nums; padding: 8px 12px; border-radius: 10px;
+  background: var(--accent-soft); color: var(--accent); min-width: 5.2rem; text-align: center;
+}
+.timer.warn { background: var(--warn-bg); color: var(--warn-fg); }
+.timer.bad { background: var(--bad-bg); color: var(--bad); }
+.seg { display: inline-flex; border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: transparent; padding: 8px 14px; font-weight: 600; min-height: 40px; }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+.rc-switch { display: flex; }
+.rc-switch .seg { width: 100%; }
+.rc-switch .seg button { flex: 1 1 0; }
+.confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 12px; border-radius: 10px; background: var(--warn-bg); color: var(--warn-fg); }
+.confirm p { flex: 1 1 14rem; font-weight: 600; }
+.rc-body { display: grid; gap: 16px; }
+.pane-text, .pane-q { min-width: 0; }
+.pane-text { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 14px; display: grid; gap: 14px; align-content: start; }
+.pane-q { display: grid; gap: 14px; align-content: start; }
+.tools { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.tools .lbl { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.ptitle { font: 700 1.35rem/1.2 var(--f-disp); }
+.psrc { color: var(--muted); font-size: .9rem; }
+.pint { font: italic 400 1rem/1.55 var(--f-read); color: var(--muted); }
+.plabel { font-weight: 700; color: var(--accent); padding-top: 4px; }
+.pnote { font-size: .85rem; color: var(--warn-fg); background: var(--warn-bg); padding: 8px 10px; border-radius: 8px; }
+.passage { display: grid; gap: 8px; min-width: 0; }
+.lines { overflow-x: auto; font: 400 clamp(.84rem, 1.6vw + .45rem, 1.05rem)/1.75 var(--f-read); padding-bottom: 4px; }
+.ln { display: flex; gap: 10px; align-items: baseline; }
+.ln .num { flex: none; width: 2.4rem; text-align: right; color: var(--accent); font: 600 .75rem var(--f-ui); font-variant-numeric: tabular-nums; }
+.ln .tx { white-space: pre; }
+.flow p { margin: 0 0 .8em; font: 400 1.04rem/1.75 var(--f-read); text-wrap: pretty; }
+.flow sup.mk { font: 600 .66rem var(--f-ui); color: var(--accent); margin: 0 .25em 0 .35em; vertical-align: super; }
+.qcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 14px; display: grid; gap: 12px; min-width: 0; }
+.qcard.done { border-color: var(--accent); }
+.qhead { display: flex; align-items: center; gap: 10px; }
+.qbadge { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: 8px; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+.qstem { white-space: pre-line; font: 600 1.02rem/1.5 var(--f-disp); }
+.ropts { display: grid; gap: 8px; }
+.ropt {
+  display: grid; grid-template-columns: 1.9rem minmax(0, 1fr); gap: 10px; align-items: baseline; text-align: left; width: 100%;
+  padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); min-height: 46px;
+}
+.ropt .ltr { display: inline-grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 1.5px solid var(--line); font-weight: 600; font-size: .85rem; align-self: start; }
+.ropt .ot { overflow-wrap: anywhere; }
+button.ropt:hover { border-color: var(--accent); }
+.ropt.sel { border-color: var(--accent); background: var(--accent-soft); }
+.ropt.sel .ltr { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.ropt.ok { border-color: var(--ok); background: var(--ok-bg); }
+.ropt.ok .ltr { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.ropt.bad { border-color: var(--bad); background: var(--bad-bg); }
+.ropt.bad .ltr { background: var(--bad); border-color: var(--bad); color: var(--surface); }
+.ropt .tag { grid-column: 2; font: 600 .8rem var(--f-ui); }
+.ropt.ok .tag { color: var(--ok); }
+.ropt.bad .tag { color: var(--bad); }
+.ropt .rs { grid-column: 2; font-size: .92rem; color: var(--muted); }
+.ropt.ok .rs, .ropt.bad .rs { color: var(--fg); }
+.exp { padding: 12px 14px; border-radius: 10px; background: var(--accent-soft); display: grid; gap: 6px; }
+.exp .why { white-space: pre-line; }
+.review-text { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); margin-bottom: 14px; }
+.review-text > summary { cursor: pointer; padding: 12px 14px; font-weight: 600; min-height: 44px; }
+.review-text .pane-text { border: 0; border-top: 1px solid var(--line); border-radius: 0 0 12px 12px; }
+
+@media (max-width: 899px) {
+  .rc-body[data-pane="text"] .pane-q { display: none; }
+  .rc-body[data-pane="q"] .pane-text { display: none; }
+}
+@media (min-width: 900px) {
+  .rc-switch { display: none; }
+}
+@media (min-width: 1000px) {
+  body[data-view="rc"] .wrap { max-width: 82rem; }
+  .rc-body { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  .rc-body .pane-text {
+    position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--head-h) + 8px);
+    max-height: calc(100vh - var(--head-h) - 28px); overflow-y: auto;
+  }
+}
+
+/* Responsive steps (320px and up) */
+@media (max-width: 479px) {
+  .card { padding: 16px 14px; }
+  .nav .btn { flex: 1 1 100%; }
+  .actions .btn { flex: 1 1 100%; }
+  details.item > summary { grid-template-columns: 2rem minmax(0, 1fr); }
+  details.item > summary .chip { grid-column: 2; justify-self: start; }
+  .tab { flex: 1 1 auto; }
+  .rc-title { flex-basis: 100%; }
+}
+@media (min-width: 480px) {
+  .dots { grid-template-columns: repeat(10, minmax(0, 1fr)); }
+  .nav .btn { flex: 0 1 auto; }
+}
+@media (min-width: 640px) {
+  .secs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 600px) {
+  .wrap { padding-block: 32px 72px; }
+  .hero { padding: 20px 0 28px; }
+  .tile { padding: 20px; }
+  .sec { padding: 24px 22px; }
+  .card { padding: 26px 24px; gap: 18px; }
+  .stem { padding: 18px 20px; }
+  .score { padding: 26px 24px; }
+  details.item > summary { padding: 14px 18px; }
+  .item .body { padding: 2px 18px 18px; }
+  .qcard { padding: 20px 20px; }
+  .pane-text { padding: 20px 20px; }
+}
+@media (min-width: 900px) {
+  .wrap { max-width: 56rem; }
+  .opts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .opt { height: 100%; }
+  .dot { min-height: 2.75rem; }
+}
+@media (min-width: 1200px) {
+  .wrap { max-width: 62rem; padding-block: 40px 88px; }
+  .tiles { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .tiles.wide { grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
+}
+@media (max-height: 480px) and (orientation: landscape) {
+  .wrap { padding-block: 12px 32px; }
+  .hero { padding: 4px 0 14px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .opt, .ropt, .btn, .tile, .sec, .dot { transition: border-color .15s, background-color .15s; }
+}
+</style>
+
+<div class="wrap"><div id="app"></div></div>
+
+<script>
+const TESTS = [];
+const GR = [[{"s":"Мына, ошо, тиги, бу деген сөздөр кайсы сөз түркүмүнө таандык?","o":["Ат атооч","сурама ат атооч","тактооч","шилтеме ат атооч"],"k":3},{"s":"Эки же андан ашык сөздөрдөн түзүлгөн аныктама жана белгисиз ат атоо кандай жазылат?","o":["ортосун эч кандай белги коюлбай, бөлөк жазылат","араларына дефис коюлат","бирге жазылат","экөө тең баш тамга менен жазылат"],"k":0},{"s":"Заттын кыймыл-аракетин, ал-абалын билдирүүчү сөз түркүмү?","o":["зат атооч","тактооч","тууранды сөздөр","этиш"],"k":3},{"s":"Төмөнкү варианттардан өздүк мамилеге мисал тап!","o":["алыш, жазыш","ачылды, тосулду","көрүн, жамын","жуудур, жаздыр"],"k":2},{"s":"Иштеп жатат деген татаал этиштен негизги жана көмөкчү этишти тап!","o":["иштеп-көмөкчү, жатат-негизги","иштеп-негизги, жатат-көмөкчү","андай вариант жок","бул мисалда негизги гана этиш берилген"],"k":1},{"s":"Буйрук, шарттуу, баяндагыч, кош, аркылуу, негизги -- аталган мисалда канчоосу этиштин ыңгайы?","o":["1","жок","3","2"],"k":2},{"s":"-а, -е, -й, -ып, -гынча. --майынча, -бай, -гычакты- булар кандай мүчөлөр?","o":["сөз өзгөртүүчү","кыймыл атоочтун мүчөлөрү","сөз жасоочу мүчөлөр","чакчылдын мүчөлөрү"],"k":3},{"s":"Жакшылап окумайынча мыкты окуу жайларына да өтө албайсың. Аталган сүйлөмдөн чакчыл түрмөктү тап!","o":["мыкты окуу жайлары","өтө албайсың","жакшылап окумайынча","чакчыл түрмөк жок"],"k":2},{"s":"Менен, тууралуу, жөнүндө, көздөй, карай, аркылуу, сыяктуу деген жандоочтор айкаша айтылган сөздөр толуктооч боло алабы?","o":["ооба","алардын ичинен экөөсү гана","жок","алардын ичинен бирөөсү гана"],"k":0},{"s":"Өткөн чакта турган татаал этиштер:","o":["угуп отурам, ырдап жатасың","келе жатат, даярдап жатат","барган элем, көрүшкөн экен","кыйынчылыктан чыгабыз"],"k":2},{"s":"Аягы жумшак үнсүздөр менен бүткөн зат атооч сөздөр кандай болуп жөндөлөт?","o":["үнсүздөрдүн ээчишүүсү аркылуу","үндүүлөрдүн ээрчишүүсү аркылуу","уланган мүчөлөргө карата","жөндөлбөйт"],"k":1},{"s":"Сан атоочтун тиешелүү мүчөлөр уланбай, уңгу түрдө туруп, заттын санын, сандык түшүнүктү билдирген мааниси:","o":["грамматикалык","лексикалык","синтаксистик","морфологиялык"],"k":1},{"s":"Ата сөзү акылдын көзү. Сүйлөмгө коюлуучу тыныш белги кайсы?","o":["(:)","(!)","(-)","(;)"],"k":2},{"s":"Жалаң табыш жөндөмөдө турган ат атоочту тап","o":["биздин, ар кимдин","эч качан, өзүбүзгө","өзүн, мени, бизди","сага, сени, аны"],"k":2},{"s":"Чакчылдардын аткарган милдети кайсы?","o":["сүйлөмдө толуктоочтук милдетти аткарат","ээлик милдет аткарат","кыймыл-аракетти билдирет, өзүнөн мурунку атооч сөздөрдү жөндөмөгө салып башкарат","белгилери жок"],"k":2},{"s":"«Чек» деген сырдык сөз кайсы малга карата айтылат?","o":["койго","уйга","төөгө","эчкиге"],"k":3},{"s":"Кызматчы сөздөрдүн бөлүнүшү","o":["3","2","4","5"],"k":2},{"s":"Анткени, себеби, андыктан. Байламталардын түрү:","o":["бириктиргич байламта","ажыраткыч байламта","себеп-натыйжалагыч байламта","шарттуу байламта"],"k":2},{"s":"⟦Себеп⟧ байламта?","o":["анткени","эгерде","балким","да"],"k":0},{"s":"Балп-салп этип басып келип, көп ат байланган ат сарайга кирип кетти. Сүйлөмдөгү тууранды сөздүн маанисине карай түрү:","o":["жөнөкөй","татаал","табыш тууранды сөз","элес тууранды сөз"],"k":3},{"s":"Татаал этиштин негизги кыймыл-аракетти билдирген бөлүгү кандай этиш деп аталат?","o":["жардамчы этиш","негизги этиш","жөнөкөй","татаал этиш"],"k":1},{"s":"Кыргыз тилиндеги азыркы колдонуп келаткан тамга кайсы тамга жана ал качантан бери колдонулуп келе жатат.","o":["1941-ж","1924-ж","1927-ж","1928-ж"],"k":0},{"s":"Жамдама сан кайсы мүчө аркылуу уюштурулат?","o":["--оо, -өө","--дай","--ча","--ынчы"],"k":0},{"s":"Кандай сөздөр ташымалданбайт","o":["баш тамгаларынан кыскартылган жана үч муундуу сөздөр","эки муундуу жана үч муундуу сөздөр","бир муундуу жана баш тамгаларынан кыскартылган сөздөр","муундарынан кыскартылган жана үч муундуу сөздөр"],"k":2},{"s":"Сөздөрдүн ичинен туунду тактоочту белгилегиле:","o":["ылдам","тез","мол","жазында"],"k":3},{"s":"«Саргыч, кызгылтым» деген сын атоочтор кайсы сөз түркүмүнөн жасалды?","o":["зат атоочтон","сын атоочтон","тактоочтон","этиштен"],"k":3},{"s":"Жандооч катышкан сүйлөм:","o":["Бермет менен Асел келет","Акыл менен апасы базарга кетти","Бермет менен келдим","Асыл менен Майрам узакка аңгемелешти"],"k":2},{"s":"Бүткүл түрк элдери ынтымакка баш кошууда. Сүйлөмдөөгө ат атоочтун түрү","o":["аныктама","жалпылама","шилтеме","сурама"],"k":0},{"s":"«Бүлөөгө бергис өгөө бар, экөөнө бергис бирөө бар» Барыш жөндөмөсүнөдө турган жамдама сан атооч","o":["экөөнө","өгөө","бирөө","бүлөөгө"],"k":0},{"s":"Сын атооч сөз:","o":["уят","уялуу керек","уялчаак","уяткеч"],"k":2}],[{"s":"Жакталып турган зат атоочтор жөндөлөбү?","o":["ооба,","жок","кээде"],"k":1},{"s":"Орундуу кайталоо бул...","o":["Айтылуучу ойду кайра- кайра тактоодо колдонулат","Айтылуучу ойду тактоо, бышыктоо, көркөмдөөдө колдонулат","Айтылуучу ойду ырастап, ыр менен берилген тексте гана колдонулат"],"k":1},{"s":"Орунсуз кайталоо кайсы учурда пайда болот?","o":["Сөздөрдү кайта-капйта кайталаган учурда","Тил байлыгынын жардылыгынан","Ошол тилди жаңыдан үйрөнүп жаткан мезгилде"],"k":1},{"s":"Бул сүйлөмдө бир өңчөй сүйлөмдөр кандай жолдор менен байланышты? Уурулук, кошоматчылык, ичи тардык- эң жаман адат","o":["интонация","сызыкча","байламта"],"k":0},{"s":"Атайын бир темага арналган маселеге байланыштуу адабияттарды изилдеп окуп чыгуу менен ал маселе жөнүндө кеңири түшүнүк берүү эмне деп аталат?","o":["Реферат","Очерк","Репортаж"],"k":0},{"s":"Бирөөнүн оюн өзүндүн оюңду бекемдөө үчүн колдонсо эмне болот?","o":["цитата","конспект","реферат"],"k":0},{"s":"Сөздүн негизги милдети эмне?","o":["пикир алышуу","атоо","сөздөрдүн маанисин билдирүү"],"k":1},{"s":"Сөз даяр материал катары колдонулабы?","o":["Колдонулбайт","Чыгарма жазууда сөздөрдү тандайбыз","Сөз тыбыштык түзүлүшкө, мааниге ээ болгондуктан, сүйлөө речибизде даяр материал катары колдонулат"],"k":2},{"s":"Татаал сөз катышпаган сүйлөмдү белгиле;","o":["Аскербек ушул имаратта күзөтчү","Кечинде мектеп залынан оюн- күлкү жаңырды","Айдар машинасын чымын-куюн кылып айдап баратты"],"k":0},{"s":"Семасиология тилдин кайсы тармагын изилдейт?","o":["Тилдеги сөздүн мааниси , ал маанилердин өзгөрүүлөрүн изилдей турган илим","Тил илиминин ар бир маанилүү сөздөрүн изилдөөчү тармагы","Омонимдерди изилдөөчү бөлүм"],"k":0},{"s":"\"Семантика\" деген терминдин мааниси кандай?","o":["Тил илими","Сөздүн түпкү теги","Сөздөрдүн мааниси"],"k":2},{"s":"Сөздөрдүн өтмө мааниси кандайча пайда болот?","o":["Сөздүн тике мааниси сөздүн башка мааниге өтүүсөнөн келип чыгат","Синоним сөздөрдөн пайда болот","Көп маанилүү сөздөрдөн келип чыгат"],"k":0},{"s":"Тексттеги абзац ........... жараша болот.","o":["мазмунуна","идеясына","микротемаларга","планга"],"k":2},{"s":"Кептин негизги стилдерин табыңыз.","o":["сүйлөшүү жана жазуу стили","баяндоо, сүрөттөө, ой жүгүртүү","оозеки, жазуу, иш кагаз стили","көркөм, илимий, публицистикалык"],"k":0},{"s":"Публицистикалык стилде элге белгилүү эмгек адамы туурасында кеңири баяндалып жазылган\nтүрү:","o":["куттуктоо","доклад","кабар","очерк"],"k":1},{"s":"Кептин баяндоо түрүнүн мүнөздүү белгисин табыңыз.","o":["бир тема боюнча ирети менен ой жүгүртүп айтуу","боло турган, болуп жаткан же болуп өткөн окуяны\nирети менен аңгемелөө","кызыктуу кабарды үстүртөн чагылдыруу","кыскача жазылган сүрөттөмө"],"k":1},{"s":"Эринсиз үндүүлөр катышкан сөз:","o":["жалбырак","уйку","мугалим","жайлоо"],"k":0},{"s":"Сөздөр орфоэпиялык нормада берилген сүйлөмдү белгилеңиз","o":["Ал бир күкүрт, он тукум сатып алды.","Ал кайра кыргыз жерине көчтү, ата конушун тапты.","Келечеги жөнүндө эмне үчүн мурда ойлонбоду экен?","Эки илебиң-кызыл гүл, Ачылгандай Мөлмөлүм."],"k":1},{"s":"Өтмө маанидеги сөзү бар сүйлөмдү табыңыз","o":["Пай-пай, эмгекти сүйгөн кишилер алп экен го!","Кызыл килем жабылган ак төө минген u1078 жарчылар\nкөчөдөн көчөгө, мааледен маалеге өттү","-Өмүр өтүп баратпайбы, Жер- Энем, арадан дагы бир жыл өттү.","Тилден бал да тамат, уу да тамат."],"k":3},{"s":"Бир маалда эшик ⟦тымызын⟧ ачылды. Алды сызылган сөздүн маанилешин табыңыз.","o":["акырын, жай","шарт, катуу","кыйчылдап, тарс-турс","шарт, жай"],"k":0},{"s":"Жалаң тил илимине байланыштуу терминдер:","o":["көркөм адабият, тема, идея","өлүү тилдер, синтаксис, адабий тил","текст, көнүгүү, каарман","окуу, китеби, сүрөт, араба"],"k":1},{"s":"Сөздөрдүн туура жазылышы берилген сөздүктү табыңыз.","o":["терминологиялык сөздүк","түшүндүрмө сөздүк","орфографиялык сөздүк","орфоэпиялык сөздүк"],"k":2},{"s":"Зат атоочко мүнөздүү категориялар:","o":["жөндөмө, таандык, даража, жак","даража, чак, жак","жак, чак, ыңгай, мамиле","жөндөмө, таандык, сан"],"k":0},{"s":"⟦Чогулуштан тараган кишилер кыштактын чоң көчөсүнө толду.⟧\nАсты сызылган сөздүн жөндөмө мүчөлөрү","o":["чыгыш, илик","атооч, барыш","атооч, илик","илик, жатыш"],"k":0},{"s":"Мен уулума ыраазычылыгымды билдирдим. Сүйлөмдөгү барыш жөндөмөсүндө турган зат атооч\nсөздү табыңыз.","o":["мен","уулума","ыраазычылыгымды","жок"],"k":1},{"s":"Чак, кем, бийик Бул сөздөрдүн карама- каршыларын белгилеңиз.","o":["узун, толук, кем","ичке, тар, кыска","тар, ашык, жапыз","кыска, аз, узак"],"k":2},{"s":"Жакында эле убакыт талабына шайкеш келген жаңы салык кодексин кабыл алдык. Этиш сөздөрдүн түзүлүшү.","o":["жай","тубаса","жөнөкөй","татаал"],"k":3},{"s":"Жамыйла күндөгүдөн бүгүн бир азыраак кечигип келди.\nСүйлөмдөгү сын-сыпат тактооч:","o":["сын-сыпат тактооч жок","бүгүн","кечигип","бир азыраак"],"k":2},{"s":"Фразеологизмдер колдонулган сөздөрдү табыңыз","o":["Эсиң кетсе эчки бак, эчки тууйт үч улак.","Башка түшсө, байтал жорго.","Ачкаңардан белиңер бекчейип, көзүңөр чекчейди го балдарым.","Биздин күндүн алдында бардыгы өсөт."],"k":2},{"s":"Жарды деген түшүнүктү билдирген","o":["жаагын айруу","үрүп чыгар ити жок","ичкен ашын жерге койгон","кабыргасы менен кеңешүү"],"k":1}],[{"s":"Кептин түрлөрү текстте айкалышып колдонулабы?","o":["мүмкүн","колдонулат","колдонулбайт","кээ бир учурларда","андай болушу мүмкүн эмес"],"k":1},{"s":"Сөз айкашынын кандай түрлөрү бар?","o":["тең, багыныңкы","туруктуу, жөнөкөй","эркин, татаал","этиштик, атоочтук","багыныңкы, багындыруучу"],"k":0},{"s":"Указ, келишим, программа, устав, жобо\n-кайсы стилге кирет?","o":["илимий","көркөм","расмий иш кагаздары","публицистикалык","булар стилге кирбейт"],"k":2},{"s":"Ар кандай ишти айттырбай жасаган азаматтар да болот.\nБул сүйлөмдөгү атоочтук түрмөктү тап, синтаксистик кызматын аныкта.","o":["ар кандай ишти айттырбай жасаган, аныктооч","айттырбай жасаган, аныктооч","ишти жасаган, толуктооч","ар кандай ишти айттырбай жасаган, ээ","жасаган азаматтар, аныктооч"],"k":0},{"s":"Сүйлөм айтылыш максатына карай канчага бөлүнөт?","o":["жалаң, жайылма","жөнөкөй, татаал","бир тутумдуу, эки тутумдуу","жай, суроолуу, илептүү, буйрук","жалаң, жай, буйрук, атама сүйлөм"],"k":3},{"s":"Иш кагаздарынын стили өз ара кандайча бөлүнөт?","o":["лексикалык, морфологиялык, синтаксистик","көркөм, публицистикалык","илимий, публицистикалык","көркөм жана иштиктүү","официалдуу жана официалдуу эмес"],"k":4},{"s":"Массалык маалымат каражаттарынын стили кайсы?","o":["көркөм стиль","илимий стиль","иш кагаздарынын стили","публицистикалык стиль","функционалдык стиль"],"k":3},{"s":"Мамлекеттик бийликтин жогорку органы тарабынан бекитилген жалпы элге бирдей\nдаражада милдеттүү болгон эрежелердин жыйындысы эмне болот?","o":["буйрук","указ","долбоор","мыйзам","консепция"],"k":1},{"s":"Биринчи жак менен автор өз колу менен баяндап жазган иш кагазы эмне деп аталат?","o":["пикир","өмүр баян","мүнөздөмө","справка","келишим"],"k":1},{"s":"Киринди сөз деп эмнени айтабыз?","o":["ойдун кимге багытталганын атап көрсөтүүчү сөздөр","башка тилдерден кирген сөздөр аркылуу түзүлгөн сүйлөм","ар бир сүйлөмдөгү башка тилден кирген сөз","айтылып жаткан ойго карата сүйлөөчүнүн ар кандай мамилесин билдирген сөз","бирөөгө тике арналып айтылган сөздөр"],"k":3},{"s":"Ал ⟦үлбүрөгөн⟧ булуттарды максатсыз тиктеди.\n-деген сүйлөмдөгу асты сызылган сөз кайсы сүйлөм мүчөсүнүн милдетин аткарды?","o":["ээлик","баяндоочтук","аныктоочтук","толуктоочтук","бышыктоочтук"],"k":2},{"s":"Биз, мугалимдер, келечек муундарды тарбиялоо-ыйык милдетибиз.\nСүйлөмдөн түшүндүрмө мүчөнү тап.","o":["биз","мугалимдер","келечек мундарды","муундарды тарбиялоо","ыйык милдетибиз"],"k":1},{"s":"Чакчыл түрмөк деп эмнени айтабыз?","o":["этиштин татаал формасы, чакчылдардын түрмөгүн түзөт","кыймыл аракеттин ар түрдүү кырдаалын билдирген этиштер чакчыл түрмөк деп аталат","негизги этишти тактоо үчүн кошумча кыймыл-аракетти билдирген этиштер чакчыл түрмөк д.а.","чакчыл форма менен аяктаган сөз тизмектери чакчыл түрмөк деп аталат","кыймыл-аракеттин атын билдирген, жөндөмө, таандык мүчөлөр менен өзгөргөн туунду этиштер"],"k":3},{"s":"Кыргыз тили теги боюнча кайсы тилдердин тобуна кирет?","o":["монгол тилинин","түрк тилинин","индо-европалык тилдерге","тыбыштык тилге","каракалпак тилине"],"k":1},{"s":"Тең байланыштагы татаал сүйлөмдүн тутумундагы жөнөкөй сүйлөмдөр кандай маанилик катышта байланышат?","o":["интонация, байламта, жандоочтор, атоочтуктар","салыштырма, мезгилдеш, каршылаш, себеп-натыйжалаш, чечмелөө","жөнөкөй, татаал, интонация, байламталык милдет аткарган сөздөр","лексикалык каражаттар аркылуу жана шарттуу ыңгайдын --са мүчөсү","атоочтуктар, чакчылдар, жандоочтор жана мезгилдик маанидеги сөздөр"],"k":1},{"s":"Багыныңкы байланыштагы татаал сүйлөмдүн составы кандай болуп бөлүнөт?","o":["тең байланыш, багыныңкы байланыш","баш сүйлөм, багыныңкы сүйлөм","байланыштуу, байланышсыз сүйлөм","жөнөкөй жана татаал сүйлөм","бир тутумдуу жана эки тутумдуу сүйлөмдөр"],"k":1},{"s":"Сүйлөшүү стилинин негизги милдети кайсы?","o":["маалымат жазуу","тезис түзүү","пикир алышуу","доклад жазуу","сүйлөшүүнү кагазга түшүрүү"],"k":2},{"s":"Төмөнкү сүйлөмгө сүйлөм мүчөлөрү боюнча туура талданган вариантты белгиле.\nСаякбай Карала уулунун эли үчүн жасап кеткен эмгеги урпактары тарабынан кастарланып жатат.","o":["аныктооч, аныктооч, ээ, толуктооч, баяндооч","толуктооч, аныктооч, толуктооч, аныктооч, баяндооч","толуктооч, аныктооч, ээ, баяндооч","бышыктооч, аныктооч, ээ, бышыктооч, баяндооч","толуктооч, аныктооч, ээ, бышыктооч, баяндооч"],"k":0},{"s":"Татаал сүйлөм грамматикалык түзүлүшүнө карай канчага бөлүнөт?","o":["2","3","4","5","бөлүнбөйт"],"k":2},{"s":"Адептүү бала илимий китеп, жогорку билим, кызыл гүл, ачык сабак\n-деген сөз айкаштарындагы байланыштын кайсы түрү?","o":["таандык байданыш","башкаруу байланыш","ыкташуу байланыш","ээрчишүү байланыш","багыныңкы, багындыруучу байланыш"],"k":2},{"s":"Төмөнкү сүйлөмдөрдү маанисине карап, киринди сөздөр менен толукта.\nДен-соолукту бекемдөө үчүн спорт менен машыгуу керек, _____.\n_____, бул кезде \"Манас\" эпосу бүт дүйнөгө таанылды. Көркөм адабият, _____,\nадамдын мүнөзүн тарбиялайт.","o":["чындыгында, ырас, албетте","болжолу, тилекке каршы, биринчиден","мүмкүн, арийне, мындайча айтканда","ырас, болжолу, кыскасын айтканда","сөзсүз, бактыга карай, экинчиден"],"k":0},{"s":"Жакшы менен жанашсаң, жетесиң муратка.\n-деген сүйлөм мааниси боюнча кандай сүйлөм?","o":["жөнөкөй","татаал","себеп багыныңкы","сыпат багыныңкы","шарттуу багынынкы"],"k":4},{"s":"Чакчыл түрмөктөр кандай синтаксистик милдет аткарат?","o":["аныктоочтук","толуктоочтук","бышыктоочтук","баш мүчөлүк","эч кандай синтаксистик милдет аткарбайт"],"k":2},{"s":"Төмөнкүлөрдүн кайсынысы татаал сүйлөм?","o":["Асанбек ата-энесинин айткандарына макул болду, аябай сүйүнүп.","Күрөгүнүн сабына таянып, саамай чачын сылап, Айша чарчаганынан бир саамга тура калды.","Жети-Өгүз- кыргыз жергесинин кереметтүү жерлеринин бири.","Токойду аралап, өмүрүңөргө өмүр кошкула, кымбаттуу жаштар!","Жаштыгыңда иштен качпашың керек, эмгектен эч ким өлгөн эмес."],"k":4},{"s":"Кайсы сүйлөмдө чакчыл түрмөк катышты?","o":["Бектурган таң куланөөк болгондо эшикте болду.","Оор барскандар күрсүлдөп, устакана кереметтенет.","Ысык-Көлдүн балыгындай сүзүп, Чолпонбай суунун аркы өйүзүнө чыкты.","Бекендин сөзү катуу тийсе да, Садыр унчукпай тура берди."],"k":2},{"s":"Баш жана айкындооч мүчөлөрдөн турган сүйлөм:","o":["жай","жайылма","жалаң","илептүү","суроолуу"],"k":1},{"s":"Публицистикалык стилдин максатын аныкта.","o":["радио, телевидение, газета, журнал макалаларынын стили","окурманга, угуучуга маалымат жеткирүү менен өзгөчө таасир калтыруу","маалымат, сын-пикир, репортаж, интервью, макала, очерк, фельетон түрүндө болот","ал баарына түшүнүктүү болуп, чоң аудиторияга багытталат","оозеки кептеги сөздөр"],"k":1},{"s":"Күлүк ой, узун санаа, түпсүз кыял Ажарды курчап алды.\nЭмне үчүн эки жерге үтүр коюлду?","o":["татаал сүйлөм","сырдык сөз","түшүндүрмө мүчө","киринди сүйлөм","бир өңчөй мүчөлөр"],"k":4},{"s":"Грамматикалык жактан сүйлөмдүн бир мүчөсүн жандап келип, ага кошумча аныктык, тактык киргизип, ошол эле сүйлөм мүчөлүк милдет аткарган сөз эмне деп аталат?","o":["баш мүчө","сүйлөм мүчөсү","айкындооч мүчө","жамдама мүчө","түшүндүрмө мүчө"],"k":4},{"s":"Көп жашаган билбейт, көптү көргөн билет.\n-деген сүйлөмдө атоочтук кандай мааниде колдонулду?","o":["этиштик","заттык","атоочтук","кыймылдык","чактык"],"k":1}],[{"s":"Күзүндө боз кыроо маалында күлүктү бир аз бош коё беришти.\n-деген сүйлөмгө тыныш белгилерин туура кой.","o":["күзүндө деген сөздөн кийин үтүр","боз кыроо деген сөздөн кийин үтүр","боз кыроо деген сөздүн эки жагына үтүр","бош коё беришти дегенден мурда үтүр","сүйлөм бүткөндөн кийин аягына чекит коюлат, башка тыныш белги коюлбайт"],"k":2},{"s":"Багыныңкы сүйлөмдү кайсы белгисине карай түрлөргө ажыратабыз?","o":["сүйлөмдүн маанилик катышына карай","баш сүйлөмдүн маанилик катышына карай","баш сүйлөмдүн түзүлүш өзгөчөлүгүнө карай","баш сүйлөмдүн алган ордуна карай","баш жана багыныңкы сүйлөмгө карата"],"k":1},{"s":"Грамматикалык түзүлүшүнө карай сүйлөм канчага бөлүнөт?","o":["экиге","үчкө","төрткө","бешке","бөлүнбөйт"],"k":0},{"s":"Баш сүйлөмдөгү ойдун ар түрдүү кырдаалын билдирсе кандай сүйлөм болот?","o":["баш сүйлөм","багыныңкы сүйлөм","тең байланыштагы сүйлөм","жамдама жактуу сүйлөм","байламталуу сүйлөм"],"k":1},{"s":"Кумурска, кумурска, сен кыйынсың жумушка.\n-деген сүйлөмдө грамматикалык жактан сүйлөмгө мүчө боло албаган сөздөрдүн кайсынысы катышты?","o":["кызматчы сөз","тууранды сөз","сырдык сөз","каратма сөз","киринди сөз"],"k":3},{"s":"Эмне үчүн? эмнеликтен? --деген суроого жооп болуп түшкөн сүйлөм кандай сүйлөм болот?","o":["себеп багыныңкы","мезгил багыныңкы","максат багыныңкы","орун багыңкы","сыпат багыныңкы"],"k":0},{"s":"Баш сүйлөмдөгү ойдун сын-сыпатын билдирген сүйлөм кандай аталат?","o":["мезгил багыныңкы","сапат багыныңкы","максат багыныңкы","шарттуу багыныңкы","карама-каршы багыныңкы"],"k":1},{"s":"Жаш кезинде сыйлап жүргүн, Аксакалды, карыны,\nКартайганда кайра өзүңө, Сыйдын тиет жарыгы. (макал)\nЖогорудагы саптарда канча жөнөкөй сүйлөм бар?","o":["2","4","3","5","1"],"k":0},{"s":"Пикир алышуу кандай жолдор менен ишке ашат?","o":["публицистикалык жол","морфологиялык жол","лексико-семантикалык","илимий-оозеки","оозеки, жазуу"],"k":4},{"s":"Көркөм стилдин монолог формасы аркылуу берилишинде кептин кайсы\nтүрлөрү кездешет?","o":["ой жүгүртүү, сүрөттөө","баяндоо, сүрөттөө","баяндоо, ой жүгүртүү","илимий, баяндоо","көркөм, сүрөттөө, ой жүгүртүү"],"k":1},{"s":"Багыныңкы байланыштагы татаал сүйлөмдүн түзүлүшү кандай сүйлөмдөрдөн турат?","o":["жөнөкөй жана татаал сүйлөмдөн","тен жана багыныңкы сүйлөмдөн","баш жана багыныңкы сүйлөмдөн","байланыштыргыч байламталар катышкан сүйлөмдөн","бир өңчөй мүчөлүү сүйлөмдөрдөн"],"k":2},{"s":"Жумуштагылардын минтип кара күчкө жаракөрлөнгөнү мага жаккан жок.\nСүйлөмдө асты сызылган сөз эмне?","o":["атоочтук түрмөк","чакчыл түрмөк","кыймыл атооч катышкан сөз","татаал синтаксистик конструкциялар","туруктуу сөз айкашы"],"k":4},{"s":"⟦Чарчаганды билбей, оюн-күлкүгө батып⟧, кыз-келиндер иштеп жатышат.\nСүйлөмдөгү асты сызылган сөз тизмектерине мүнөздөмө бер.","o":["бир өңчөй мүчөлөр","атоочтук түрмөктөр","чакчыл түрмөктөр","татаал сүйлөмдөр","багыныңкы сүйлөмдөр"],"k":2},{"s":"Баш жана багыныңкы сүйлөм грамматикалык кайсы каражаттар аркылуу байланышат?","o":["интонация, байламталар","түзүлүшү, орун тартиби","мезгилди көрсөтүүчү сөздөр, кызматчы сөздөр","каршылагыч, ажыраткыч байламталар жана жандоочтор","чакчыл мүчөлөр, атоочтук мүчөлөр жана шарттуу ыңгайдын --са мүчөсү"],"k":4},{"s":"Гүлдөй бер, Кыргызстаным,\nКүнөстүү тоонун боорунда.\n-деген сүйлөмдө грамматикалык жактан сүйлөмгө мүчө боло албаган сөз кайсы?","o":["андай сөз жок","күнөстүү","Кыргызстаным","боорунда","гүлдөй бер"],"k":2},{"s":"Көп багыныңкылуу татаал сүйлөм кайсы?","o":["Кыш аяктап, жаз келип калган, ошентсе да күн суук.","Эл көбөйүп, кыштак пайда боло да, ал шаарга айланат.","Бардыгы иштесе да, сенчелик ийгилик жарата алышпады.","Жол тайгак болгондуктан, Бектемир капчыгай өрдөй бастырды.","Күн ысып, козулар бадалга киргенде, биз көлөкөгө отурдук."],"k":4},{"s":"Төмөнкү текст структуралык жактан кептин кайсы түрү аркылуу түзүлдү.\nШадыкан чепейген, арыкчырай сары киши. Сербейген сакалы бар. Жашы элүүлөрдө.\nҮстүндө жеңи кырылган кызыл чапаны бар.","o":["баяндоо","ой жүгүртүү","сүрөттөө","илимий","көркөм"],"k":2},{"s":"Концелярдык иш кагаздарына кайсылар кирет?","o":["токтом, нота, закон, устав","арыз, буйрук, өмүр баян, указ","отчет, устав, конвенция, билдирүү","акт, справка, рапорт, мүнөздөмө, отчет","келишим, меморандум, каталог, закон"],"k":3},{"s":"Төмөнкү официалдуу иш кагаздарынын түрү эмне деп аталат?\nМамлекеттик бийликтин жогорку органы тарабынан бекитилген жалпыга бирдей\nдаражада милдеттүү жобо, эреже.","o":["мыйзам","буйрук","указ","устав","декрет"],"k":2},{"s":"Байламтасыз тең байланыштагы татаал сүйлөмдү тап.","o":["Каш карайып, күүгүм киргенде, мен Талды-Булакка жетип келдим.","Эмгек түбөлүктүү, ошондуктан адамдын эмгеги өлбөйт.","Күн ачык, бирок муздак жел согуп турат.","Бурма ыйлаган болуу керек, кирпиги нымдалышып турат.","Комуздун үнүн тыңшап жатты да, бир топтон кийин ордунан турду."],"k":3},{"s":"Сүйлөмдүн грамматикалык жалпы структурасында кандай бирдиктер болот?","o":["сүйлөмдүн ээси жана баяндоочу","сүйлөмдүн баш мүчөлөрү","сүйлөмдүн баш жана айкындооч мүчөлөрү","сүйлөм мүчөлөрү жана грамматикалык жактан сүйлөмгө мүчө боло албаган сөздөр","баш мүчөлөр, сүйлөмгө мүчө боло албаган сөздөр"],"k":3},{"s":"Тике сөз кепте аткарган милдеттери жагынан кандай болуп бөлүнөт?","o":["тике, кыйыр","цитата, диалог","монолог, диалог","тике, цитата","диалог, бөтөн"],"k":1},{"s":"Обочолонгон түшүндүрмө мүчөлөр стилдин кайсы түрүндө активдүү колдонулат?","o":["көркөм стилде","оозеки стилде","илимий стилде","публицистикалык стилде","иш кагаздарынын стилинде"],"k":4},{"s":"Көпкөн жигит көп сүйлөйт, чечен жигит эп сүйлөйт.\nКандай сүйлөм?","o":["байламтасыз багыныңкы сүйлөм","тең байланыштагы татаал сүйлөм","багыныңкы байланыштагы сүйлөм","байламталуу тең байланыштагы сүйлөм","бир тутумдуу сүйлөм"],"k":1},{"s":"Кептин жазуу формасы эмне аркылуу ишке ашат?","o":["тема","текст","абзац","маани","маңыз"],"k":1},{"s":"Чындыгында, кыргыз көрбөгөн азап калган жок, балдарым.\nСүйлөмгө мүчө боло албаган сөздөрдү тап.","o":["кыргыз көрбөгөн","калган жок","чындыгында, балдарым","калган жок, балдарым","чындыгында калган жок"],"k":2},{"s":"Чоң арабакечтерди туурап, жайбаракат бастым.\nТүзүлүшүнө карай кандай сүйлөм?","o":["багыныңкы сүйлөм","багыныңкы байланыштагы татаал сүйлөм","баш сүйлөм","жөнөкөй сүйлөм","тең байланыштагы татаал сүйлөм"],"k":3},{"s":"Оозеки сүйлөө учурундагы тынымдар эмне деп аталат?","o":["пауза","үн узундугу","интонация","басым","логикалык басым"],"k":0},{"s":"Интонациянын негизги элементи кайсы?","o":["тамга","басым, тыным","ташымал","муун","сөз"],"k":1},{"s":"Сүйлөмгө тыныш белгилери эмне үчүн коюлуш керек?\nКарыя эт казанга түшкөнчө жалгыз күүсүн алда канча чертип жиберди.","o":["бир өңчөй мүчөлүү","чакчыл түрмөктүү","тең байланыштагы татаал сүйлөм","багыныңкы байланыштагы татаал сүйлөм","тыныш белгиси коюлбайт"],"k":3}],[{"s":"Менен жандоочу кошулуп айтылган атоочтуктун --ган формасы, да, дагы байламталар кошулуп айтылып, шарттуу ынгайдын --са формасы аркылуу багыныңкы сүйлөмдүн кайсы түрү уюшулат?","o":["шарттуу багыныңкы сүйлөм","себеп багыныңкы сүйлөм","сыпат багыныңкы сүйлөм","мезгил багыныңкы сүйлөм","карама-каршы багыныңкы сүйлөм"],"k":4},{"s":"Төмөнкү сүйлөм татаал сүйлөмдүн кайсы түрүнө кирет?\nБиздин Сары-Камыш эң чоң айыл- ал үч жүздөн ашык түтүн.","o":["тең байланыштагы","багыныңкы байланыштагы","жөнөкөй эле сүйлөм","салыштырма багыныңкы сүйлөм","байламтасыз тең байланыштагы татаал сүйлөм"],"k":4},{"s":"--нын мүчөсү аркылуу сын атоочтун кайсы даражасы жасалат?","o":["жай","күчөтмө","арсар","салыштырма","басаңдатма"],"k":1},{"s":"Кайсы сүйлөмдө тыныш белги туура коюлган?","o":["--Айий чоң эне, биз өткөн жолу келгин куштардын кайда кыштарын билдик.","Ай-ий, чоң эне биз өткөн жолу келгин куштардын кайда кыштарын билдик.","Ай-ий, чоң эне, биз өткөн жолу келгин куштардын кайда кыштарын билдик.","Ай-ий! чоң эне! биз өткөн жолу келгин куштардын кайда кыштарын билдик.","Ай-ий, чоң эне, биз өткөн жолу келгин куштардын кайда кыштарын билдик."],"k":2},{"s":"Алтынай үйдөн чыкса, мамыда эки ат байланып туруптур.\n-деген сүйлөм багыныңкы сүйлөмдүн кайсы түрүнө кирет?","o":["шарттуу","себеп","максат","мезгил","сан-өлчөм"],"k":0},{"s":"Тең байланыштагы салыштырма татаал сүйлөм:","o":["Кылыч жарасы бүтөт, тил жарасы бүтпөйт.","Жаз-жарыш, күз-күрөш.","Баатыр өлөт, артында баркы калат.","Кармашуу катуу болду, көбү өлдү, көбү качып кетти.","Таң атып, жер бети кыймылга келди."],"k":1},{"s":"Аппак кар түшүп турат, түшүп турат.\nСебилип, тээ тетиги көктөн кулап.\nДарактар калч-калч этип үшүп турат,\nАр бири аппак кардан тумак сурап.\n-деген ыр саптары кептин кайсы түрү?","o":["баяндоо","ой жүгүртүү","сүрөттөө","жаратылышты сүрөттөө","көркөм"],"k":3},{"s":"Зымкана анчалык жакшы жерде эмес- айланасы какыраган боз чап, чаңдаган куу топурак.\nБайламтасыз тең байланыштагы татаал сүйлөмдүн тутумундагы жөнөкөй сүйлөм өз ара кандай маанилик катышты түздү?","o":["мезгилдеш","каршылаш","салыштырма","себеп-натыйжа","чечме"],"k":4},{"s":"Ойдун кимге багытталганын атап көрсөтүүчү сөз эмне деп аталат?","o":["киринди сөз","сырдык сөз","түшүндүрмө сөз","зат атооч","каратма сөз"],"k":4},{"s":"Калк көбөйгөндөн кийин, кыштак пайда болот, ал шаарга айланат.\nЖогорудагы сүйлөм татаал сүйлөмдүн кайсы түрүнө кирет?","o":["багыныңкы байланыштагы татаал сүйлөм","тең байланыштагы татаал сүйлөм","байламталуу тен байланыштагы татаал сүйлөм","чечмелөө татаал сүйлөм","каршылаш татаал сүйлөм"],"k":3},{"s":"Татаал сүйлөмдүн кайсы түрүнө кирет?\nЖылдыздын көбү-асмандын көркү, билимдин көбү-адамдын көркү.","o":["багыныңкы байланыштагы татаал сүйлөм","тең байланыштагы татаал сүйлөм","байламталуу тең байланыштагы татаал сүйлөм","чечмелөө татаал сүйлөм","каршылаш татаал сүйлөм"],"k":1},{"s":"Цитата түрүндөгү тике сөз кайда көп колдонулат?","o":["оозеки кепте","көркөм чыгармаларда","илимий эмгектерде, иш кагаздарында","саясий-публицистикалык чыгармаларда, илимий эмгектерде","көп колдонулбайт"],"k":3},{"s":"Текст-бул мааниси жана грамматикалык түзүлүшү боюнча өз ара байланышкан бир канча сүйлөмдөр.\nСтилдин кайсы түрүнө кирет?","o":["оозеки стиль","көркөм стиль","илиий стиль","публицистикалык стиль","иш кагаздарынын стили"],"k":2},{"s":"Төмөнкү сүйлөмдөн аныктоочту тап.\nТил - ар улуттун руханий күзгүсү.","o":["тил","ар","руханий күзгүсү","ар улуттун, руханий","күзгүсү"],"k":3},{"s":"Тырмакча кайсы тике сөздүн түрүндө колдонулбайт?","o":["диалогдо","бүт тике сөздүн түрүндө","бөтөн сөз сүйлөмдүн ортосуна келсе","төл сөздөн кийин бөтөн сөз келсе","баарында колдонулат"],"k":0},{"s":"Баш жана багыныңкы сүйлөмдөр кандай белги менен ажыратылат?","o":["үтүрлүү чекит","үтүр","кош чекит","сызыкча","эч белги коюлбайт"],"k":1},{"s":"Атоочтук түрмөк катышкан сүйлөмдү белгиле.","o":["Мени жамандаган адам- менден корккон адам.","Туулган жердин топурагы-алтын.","Карынын кебин капка сал.","Өнөрлүү өлбөйт.","Балапандай үрпөйгөн Ажар карышкырларга жем болду."],"k":4},{"s":"Билим деген улуу ойчул Жусуп Баласагын өнөр, өмүргө суудай керек.\nТыныш белгисин белгиле.","o":["кош чекит, үтүрлүү сызыкча, тырмакча","тырмакча, үтүр, кош чекит","тырмакча, үтүрлүү сызыкча, үтүрлүү сызыкча, тырмакча","кош чекит, тырмакча, үтүрлүү сызыкча","тырмакча, үтүрлүү сызыка"],"k":2},{"s":"Атоочтуктарды кайсы мүчөлөр уюштурат?","o":["--ча, -лык,-лата, -сын","--луу, -сыз, -дай, -чылап","--ган, -ар,-оочу,-уучу","--кер, -бас,-ма,-ла","--ар,-уу,-оо,-ган,-дын"],"k":2},{"s":"Татаал сүйлөмдө канча грамматикалык негиз болот.","o":["бир","грамматикалык негиз болбойт","эки жана адан көп","үчтөн ашык баяндооч","беш"],"k":2},{"s":"Грамматикалык жактан сүйлөмгө мүчө боло албаган сөздөр:","o":["кызматчы сөздөр","модалдык сөздөр","каратма, киринди, сырдык сөздөр","этиштин өзгөчө формалары","түшүндүрмө мүчөлөр"],"k":2},{"s":"Төмөнкү текстте канча абзац бар?\nСөз --адамдын маданияты. Адамды адам менен байланыштырган --сөз. Эл билген улуу эмес, сөз билген улуу. Сөз болбосо эненин балага болгон мээрими кантип төгүлмөк?! Атанын акылы кайдан айтылмак?! Сөз билүүнүн өзү да улуу керемет! Ошон үчүн сөз үйрөнөлү!","o":["абзац жок","2","3","4","1"],"k":2},{"s":"Биз белге чыкканда, чыныдай аппак үйлөр көрүндү.\nБагыныңкы сүйлөмдүн кайсы түрү?","o":["шарттуу","мезгил","себеп","максат","орун"],"k":1},{"s":"Чакчыл түрмөк сүйлөмдүн кайсы мүчөсүнүн милдетин аткарат?","o":["ээлик","баяндоочтук","бышыктоочтук","толуктоочтук","аныктоочтук"],"k":2},{"s":"Чакчыл түрмөк жазууда кандай белги коюлат?","o":["сызыкча","үтүр","кош чекит","көп чекит","эч кандай белги коюлбайт"],"k":1},{"s":"Багыныңкы сүйлөмдүн этиштик баяндоочторуна кандай мүчөлөр уланат?","o":["--луу,-дай,-ып,-сыз","--ган,-ып,-гыча,-са,-ганда","--мак,-ыш,-май,-са","--га,-нын,-майынча","--ын,-ныкы,-ган,-са"],"k":1},{"s":"Нан биздин түгөнгүс байлыгыбыз! Нансыз жашоо жок.Нан болсо токчулук өмүр сүрөт. Нан дыйкандарыбыздын эмгегинен, маңдай теринен жаралат. Нанды ысырапкорчулукка учуратпайлы, достор!\nСтилдин түрүн аныкта.","o":["илимий стиль","сүрөттөө стили","публицистикалык стиль","коркөм стиль","баяндоо"],"k":2},{"s":"Төмөнкү асты сызылган сөздөрдүн кайсылары сүйлөмдө бирдей кызмат аткарат?\n1.⟦Жаманга⟧ чөп илешет, жакшыга көз илешет.\n2.Чарба иштерин ⟦уюштурууда⟧ жакшы иштер башталды.\n3.Осмон-айылдын ⟦сакалдуусу⟧.\n4.Көргөзмөгө эски улуттук ⟦буюмдар⟧ коюлду.","o":["1-3","2-4","1-2","1-2","1-4"],"k":3},{"s":"Сыпат багыныңкы сүйлөм кайсы вариантта берилген?","o":["Көл чайпалса көбүгү бетине чыгат, эл чайпалса, тентеги четине чыгат.","Эр жаңылса да, эл жаңылбайт.","Көздөрү чырактай жайнап, жүзүнөн нур төгүлөт.","Алдыңкы көч кайда барса, кийинки көч да ошол жерге барат.","Билимден өткөн күч жок, билимдүү адам гана эч качан жеңилбейт."],"k":2},{"s":"Бул-деген ат атоочтун туура жөндөлгөн вариантын тап.","o":["буга, мындан, буну","мунун, муну, бундан","булдан, буга, буну","мундан, муга, муну","муну, буга, мындан"],"k":4}],[{"s":"Төмөнкү сөз айкаштарынан таандык байланыштагы сөздөрдү тап.\nБалдан таттуу, кабыргасы менен кеңешүү, мекендин топурагы, ыктуу сүйлөө, апендинин жоругу, кыялкеч кыз, баланы сүйүү","o":["балдан таттуу, баланы сүйүү","кабыргасы менен кеңешүү, ыктуу сүйлөө","мекендин топурагы, апендинин жоругу","балдан таттуу, мекендин топурагы","баланы сүйүү, апендинин жоругу"],"k":2},{"s":"Синтаксистик татаал конструкцияларды уюштуруучу негиз (өзөк) кайсылар?","o":["негизги жана жардамчы этиштер","атоочтук, чакчыл, кыймыл атоочтор","этиштин атоочтук жана чакчыл формалары","туунду жана тубаса этиштер","татаал сөздөр"],"k":1},{"s":"Сөз айкаштарынын негизги түгөйлөрүн тап.\nСуусуз чөл, тунук суу, гүлдүн жыты, жалкоо адам","o":["чөл, суу, жыты, адам","суусуз, суу, тунук","гүлдүн, жыты, жалкоо, чөл","адам, жалкоо, тунук, суу","суу, тунук, жыты, жалкоо"],"k":0},{"s":"Кайсы учурда атоочтук түрмөк толуктоочтук милдет аткарат?","o":["жөнөкөй түрдө болгондо","--ган мүчөсү уланганда","жөндөмө мүчө уланганда","көптүк мүчө уланганда","заттык мааниде колдонгондо"],"k":2},{"s":"Чакчыл түрмөк менен багыныңкы сүйлөмдүн кандай айырмасы бар?","o":["өзүнөн кийин үтүр коюлбайт","үтүр менен ажыратылат","ээ менен баяндооч болбойт","баяндоочу болбойт","ээси гана болот"],"k":2},{"s":"Түшүндүрмө мүчөнү тап.\nКана, санаалаштар, ага-туугандар, сөөк-тамырлар, жоро-жолдоштор акыл-насаатыңарды айткыла.","o":["кана, санаалаштар","жоро-жолдоштор, акыл-насаатыңарды","санаалаштар, ага-туугандар, сөөк-тамырлар, жоро-жодоштор","кана, жоро-жолдоштор","акыл-насаатыңарды айткыла"],"k":2},{"s":"Тий, тий десе, тийбей, тийбе, тийбе десе, тиет.\nБул сүйлөм канча жөнөкөй сүйлөмдөн турат?","o":["4","3","1","2","6"],"k":3},{"s":"Синтаксистик жактан сүйлөм тутумунда \"чакчыл түрмөк\" деп аталган бүтүндөй сөз тизмеги бир эле суроого жооп берип, сүйлөмдүн бир гана мүчөсүнүн _____милдетин аткарат.","o":["аныктоочтун","толуктоочтун","бышыктоочтун","ээнин","баяндоочтун"],"k":2},{"s":"Нан-түгөнгүс байлык. Ал дыйкандардын кайратман эмгегинен жаралат. Эмесе, нанды урматтай билели, жаш достор!\n-деген сүйлөмдөр эмне үчүн текст боло алат?","o":["себеби публицистикалык стилде жазылган","бир теманы ачып берип жатат","сүйлөмдөр маанилик, грамматикалык, тематикалык байланышта келди","эки жөнөкөй сүйлөмдөн ашык болгондугу үчүн","белгилүү бир идеяны жана теманы ачып бергендиги үчүн"],"k":0},{"s":"Түшүндүрмө мүчөлөр канча түргө бөлүнөт?","o":["2","3","4","5","6"],"k":1},{"s":"Айтылып жаткан ойго карата сүйлөөчүнүн ар кандай мамилесин билдирген сөз эмне деп аталат?","o":["текст","подтема","киринди сөз","тексттин маанилик бүтүндүгү","баяндоо"],"k":2},{"s":"Мезгил багыныңкы сүйлөмдү тап.","o":["Бекназар обдулду эле, Эшим элирген аргымакты алдына тартты.","Жашоонун маңызы узактыгы менен бааланбайт, кантип жашагандыгы менен бааланат?","Ырчы айылдан узаганда, күн уясына батып калган эле.","Атайы издеп келдим, ошондуктан күтөм да.","Иши оңолордун ити чөп жейт эмеспи."],"k":2},{"s":"Кимдир бирөөнүн эмгектик, коомдук ишмердүүлүгү жөнүндө ишкана, мекеме жетекчилери тарабынан оозеки-жазуу түрүндө берилген иш кагаз:","o":["мүнөздөмө","өмүр баян","очерк","отчет","арыз"],"k":0},{"s":"Татаал сүйлөмдөр грамматикалык түзүлүшү жагынан канчага бөлүнөт?","o":["2","3","4","5","6"],"k":2},{"s":"уйгур, тува, хакас, сары уйгур, алтай тилдери кайсы тилдерге кирет?","o":["жоголуп бараткан тилдерге","байыркы түрк тилдерине","түрк тилдерине","жаңы түрк тилдерине","ар бири өзүнчө, бири-бирине байланышы жок"],"k":2},{"s":"Өмүрдүн башаты эне.\n-деген сүйлөмгө кандай тыныш белги коюлат?","o":["үтүр","илеп","тырмакча","сызыкча","кашаа"],"k":3},{"s":"Эл- өмүрдүн узундугу, анын мазмуна карай бааланарын эскертет.\nЖогорудагы сүйлөм туура жазылганбы?","o":["төл, бөтөн сөздөр ажыратылган эмес","туура эмес","кыйыр сөз катарында туура жазылган","цитата анык такталган эмес","кыйыр сөз эмес"],"k":2},{"s":"Төмөнкү текстте кайсы стилдер аралаш келди жана кептин кайсы түрлөрү катышканын аныкта.\nТолгонай, адам баласы тынчтыкта жашай алабы, жокпу дейсиң. Өзүң ойлоп көрчү, ал менден эмес, ал адам баласынын өзүнөн, силердин ынтымагыңардан,ыктыярыңардан, акылыңардан...","o":["көркөм, публицистика: сүрөттөө, баяндоо","көркөм, оозеки: баяндоо, сүрөттөө","көркөм, публицистика: баяндоо, ой жүгүртүү","оозеки, сүйлөшүү: баяндоо, ой жүгүртүү","илимий, публицистика: ой жүгүртүү, баяндоо"],"k":2},{"s":"Башка бирөөнүн сөзүн эч өзгөртпөй сөзмө-сөз колдонуу эмне деп аталат?","o":["тике бөтөн сөз","цитата","диалог","кыйыр сөз","ырастоочу, бекемдөөчү сөз"],"k":0},{"s":"Диалогдо тыныш белги кандай коюлат?","o":["кош чекит","тырмакчага алынат","абзац менен жазылат","жаны жолдон башталып, алдына сызыкча коюлат","эч кандай белги коюлбайт"],"k":3},{"s":"Татаал сүйлөмдүн тутумунда негизги ойду ээлеп турган бөлүгү эмне деп аталат?","o":["баш сүйлөм: айтылып жаткан ойдун негизин билдирет","ээси: ойдун аякталыш чегин билдирет, жыйынтыктайт","негизги сүйлөм","тең байланыштагы сүйлөм","багынычсыз сүйлөм"],"k":0},{"s":"Төмөнкү сөз айкаштарынан таандык байланышы бар вариантты тап.\nБалдан таттуу, кабыргасы менен кенешүү, баладай кыялкеч, жоокердин анты, жакшы сөз, амалкөйдүн амалы, энени урматтоо","o":["балдан таттуу, энени урматтоо","кабыргасы менен кенешүү, баладай кыялкеч","амалкөйдүн амалы, жоокердин анты","жакшы сөз, энени урматтоо","амалкөйдүн амалы, балдан таттуу"],"k":2},{"s":"Багыныңкы сыңар багындыруучуга сан, жак боюнча ээрчисе:","o":["башкаруу байланышы","таандык байланыш","ыкташуу байланышы","ээрчишүү байланышы","байланыштын түрлөрү мындай жол менен байланышпайт"],"k":3},{"s":"Баракелде, Ысман, бул кылганың, менин баамымда, өткөн кемчиликтерди оңдоого кылган аракетиң го.\nСүйлөм ичинде сүйлөмгө мүчө боло албаган канча өз бар?","o":["5","3","андай сөз жок","6","2"],"k":1},{"s":"Сүйлөмдөрдүн ичинен обочолонгон түшүндүрмө мүчөлүү сүйлөмдү тап.","o":["Кап! Ушул тентекти кантсек болот ыя?","О-хо! Анда кереметти жер бетин жети айлансаң да таппайсың го!","Аттиң ай! Жакып агайдын келбегенин карачы!","Өзүмдүн айылыма, Ак-Сууга бүгүн араң келдим.","Ошол иши өз убагында бүтүргөндө мындай кыйынчылыктар туулбас беле..."],"k":3},{"s":"Анын айтканына караганда, болжолу, бүгүн ал келбейт, шекилдүү.\nСүйлөмдө канча киринди сөз бар?","o":["2","3","4","1","андай сөз жок"],"k":1},{"s":"Сырдык сөздүн сүйлөмдөгү орду кандай?","o":["дайыма биринчи келет","сүйлөмдүн ортосуна келет","сүйлөмдөгү орду эркин","сүйлөмдүн аягына келет","башында жана аягында келет"],"k":2},{"s":"Каратма сөздүн милдетин аткарган сөз түркүмү:","o":["бардык эле сөз түркүмү","зат атооч жана заттык маанидеги сөздөр","илик жөндөмөсүндөгү зат атоочтор","сын жана зат атоочтор","ат атоочтор"],"k":1},{"s":"Интервью, репортаж, конспект, устав, реферат, очерк.\nКанчасы публицистикалык стилге кирет?","o":["3","2","1","4","5"],"k":4},{"s":"Күнүнө мейман канча жолу келген сайын, союлуучу малдын чаркы ошончо кошула берди.\nЖогорудагы сүйлөм багыныңкы сүйлөмдүн кайсы түрүнө кирет?","o":["сан-өлчөм","мезгил","орун","максат","шарттуу"],"k":0}],[{"s":"Атоочтук- ээ болгон учурду тап.","o":["Жаманга айткан кайран сөз, өлгөнгө ыйлаган кайран көз.","Демейде тез эле чогула калгандар бүгүн кечигип жатышты.","Каттагандардын баарынан Жапарды сурата берүүчү.","Жарамазан айтуучуларга кошулуп алып кетти.","Кечээ келгендерге, отличниктерге сыйлык берилди."],"k":1},{"s":"Баш жана багыныңкы сүйлөм бири-бири менен грамматикалык кайсы каражаттар\nаркылуу байланышат?","o":["интонация, байламталар","түзүлүшү, орун тартиби","чакчыл, атоочтук жана шарттуу ыңгайдын --са мүчөсү","интонация, байламта, жөндөмө мүчөлөр, сөз жасоочу мүчөлөр","байламталар, жандоочтор"],"k":2},{"s":"Бүгүнкү күндө кыргыз тили кандай формада жашап келүүдө?","o":["жазуу, оозеки","жазуу, көркөм","көркөм, оозеки","оозеки, көркөм","оозеки"],"k":0},{"s":"Синтаксистик татаал конструкциялар чакчыл түрмөк, атоочтук түрмөк катышкан сүйлөмдү аныкта.\n1. Иши оңолордун ити чөп жейт, иши оңолбостун келини ууру кылат.\n2. Ичи оорубагандын кудай менен иши жок.\n3. Төрт түлүктү семиртип, Эт жараткан аккан суу.\n4. Калмакка сүрдүү болсун деп, Калкан тактым далыңа.\n(5) Жамандарды жазалап, оң жолго сал.","o":["1-2","1-2-3-4-5","1-2-3","2-5","1-2-4-5"],"k":1},{"s":"Багыныңкы байланыштагы сүйлөмдү тап.","o":["Жашыл оңот, жаш чоңоёт.","Достор үчүн кыянатчылык ойлоо- барып турган чыккынчылык.","Балдар жамгыр төгүп жатса да, үйгө киришкен жок.","Кыздар бирин-бири түртүшүп жымыңдашып күлүштү.","Арык семирет, ач тоюнат."],"k":2},{"s":"Түшүнүк кат кайсы стилге тиешелүү?","o":["илимий","расмий эмес иш кагаздары","официалдуу","публицистикалык","көркөм"],"k":1},{"s":"Баш сүйлөмдүн ортосунда кыстарылып келген багынынкы сүйлөмдү тап.","o":["Жапар катты окуп чыкканда, өңү кумсарып көзү ымыр-чымыр болду.","Бүткөн бою дирилдеп, бир топко чейин каттан көзүн албады.","Ажар, карышкырлар жакындап кирип келген сайын, ширеңке тартып жатты.","Эне тил болбой, эл болбойт.","Көтөрүлүп көп сүйлөп, болбос ишке күлбөгүн."],"k":2},{"s":"Кайсынысы тең байланыштагы татаал сүйлөм?","o":["Өткөн күндү эскерген-өскөндүктүн белгиси.","Мээримдүүлүктү энеден үйрөн, адептүүлүктү эстүүдөн үйрөн.","Айтике, баланы карап, отура калды.","Күндүн нуру болбосо, күн күркүрөп көбөйбөйт.","Тартип кайда болсо, жеңиш ошол жерде."],"k":1},{"s":"Массалык маалымат каражаттарынын стили кайсы?","o":["көркөм стиль","илимий стиль","иш кагаздарынын стили","публицистикалык стиль","функционалдык стиль"],"k":3},{"s":"Тең жана багыныңкы байланыштагы сүйлөмдөрдүн тутумунан туруп, грамматикалык жана маанилик жактан өз ара бири-бири менен ажырагыс болуп байланышкан жана кеңири маанидеги бирдиктүү бир ойду билдирген сүйлөмдөр:","o":["көп багыныңкылуу татаал сүйлөм","бир маанилүү аралаш татаал сүйлөм","аралаш татаал сүйлөм","бир багыныңкылуу гана татаал сүйлөм","аралаш бир багыныңкылуу сүйлөм"],"k":2},{"s":"Багыныңкылуу сүйлөмдүн канча түрү бар?","o":["5","9","6","2","3"],"k":1},{"s":"Шамал болбой, чөптүн башы кыймылдабайт.\nТатаал сүйлөмдүн тутумундагы жөнөкөй сүйлөмдүн синтаксистик түгөйлөрү кантип байланышты?","o":["атоочтуктар аркылуу","жандоочтор аркылуу","интонация аркылуу","чакчылдар аркылуу","--ба терс формасы аркылуу"],"k":3},{"s":"Ишим калганча, ашым калсын.\nЖогорудагы сүйлөм багыныңкы сүйлөмдүн кайсы түрүнө кирет?","o":["шарттуу","себеп","салыштырма","максат","сыпат"],"k":2},{"s":"Эркин сөз айкаштарынын кандай түрлөрү бар?","o":["тең, багыныңкы","туруктуу, жөнөкөй","эркин, татаал","этиштик, атоочтук","багыныңкы, багындыруучу, ыкташуу"],"k":3},{"s":"Иш кагаздарынын стили өз ара кандайча бөлүнөт?","o":["лексикалык, морфологиялык, синтаксистик","көркөм, публицистикалык","илимий, публицистикалык","көркөм жана иштиктүү","официалдуу жана официалдуу эмес"],"k":4},{"s":"Сырдык сөзү бар сүйлөмдү аныкта.","o":["Ай, анын кереги эмне? Сага тиешеси жок.","Алар, эң оболу, сөзгө келишсинчи.","Ошондой болсо да, биз аны көрсөк болот эле.","Жылдыз, биз азыр барабыз.","Менимче, баарынын эле кудурети жетпегидей."],"k":0},{"s":"Кумурска, кумурска, сен кыйынсың жумушка.\nСүйлөмгө мүчө боло албаган канча сөз бар?","o":["3","1","2","4","жок"],"k":2},{"s":"Жер бетин караңгылык каптагандыктан, эки жактан эч нерсе көрүнбөйт.\nЖогорудагы сүйлөм багыныңкы сүйлөмдүн кайсы түрүнө кирет?","o":["шарттуу","себеп","сыпат","мезгил","орун"],"k":2},{"s":"\"Публицистика\" деген термин кайсы тилден алынган?","o":["грек","орус","латын","англис","славян"],"k":2},{"s":"Тил каражаттарынын негизинде жазуу аркылуу иштелип чыккан\nкеп чыгармачылыгынын натыйжасы _____деп аталат.","o":["тил","стиль","кеп","сүйлөм","текст"],"k":1},{"s":"Биринчи жак менен автор өз колу менен баяндап жазган иш кагазы эмне деп аталат?","o":["пикир","өмүр баян","мүнөздөмө","справка","келишим"],"k":1},{"s":"Татаал сүйлөмдүн курамынан салыштырма багыныңкы сүйлөмдү тап.","o":["Бириндеп булут көрүнсө, күндүн көзү ачылат.","Тоого чыккан адам алысты көргөндөй, окуган адам дүйнөнү кең тааныйт.","Нурлан тоого барып келиш үчүн, энеси кам көрө баштады.","Асмандан жамгыр төгүлсө, чөптүн гүлү ачылат.","Бир аз убакыт өткөндөн кийин, жаркырап электр шамы күйдү."],"k":1},{"s":"⟦Күн тийбес⟧ тамда жатамын, Күч кетип, эс ооп алсырап. (Токтогул)\nАты сызылган сөз этиштин өзгөчө формаларынын кайсы түрүнө кирет?","o":["чакчыл","атоочтук","чакчыл түрмөк","атоочтук түрмөк","кыймыл атооч"],"k":1},{"s":"Төмөнкү сүйлөмдү маанисине карап тиешелүү сөздөр менен толукта, тең байланыштагы\nтатаал сүйлөмдүн кайсы түрүнө кирерин аныкта.\n_____көңүлгө ачуу тиет, бирок аны _____пайдасы өлчөмсүз зор. (Жусуп Баласагын)","o":["Орой сөз, кечире билсең (байламтасыз тең байланыш)","Калп сөз, айта билсең (байламталуу тең байланыш)","Туура сөз, сиңире билсең (байламталуу тең байланыш)","Чындык сөз, уга билсең (байламтасыз тең байланыш)","Одоно сөз, туура кабыл алсаң (байламтасыз тең байланыш)"],"k":2},{"s":"Биз белге чыкканда чыныдай аппак үйлөр көрүндү.\nСүйлөмдү жалаң сүйлөмгө айландыр.","o":["Белге чыкканда, көрүндү.","Чыкканда, аппак үйлөр көрүндү.","Чыныдай үйлөр, белге чыкканда көрүндү.","Биз чыктык, үйлөр көрүндү.","Бизге чыныдай үйлөр белден көрүндү."],"k":3},{"s":"Бөтөн сөз кандай түрдө берилет?","o":["тике сөз, төл сөз түрүндө","тике сөз, автордун сөзү түрүндө","тике сөз, кыйыр сөз түрүндө","кыйыр сөз түрүндө","бөтөн сөз түргө бөлүнбөйт"],"k":2},{"s":"Төмөнкү ыр саптарында түзүлүшүнө карай кандай сүйлөм бар?\nЖыргал да, кубаныч да, жана бакыт,\nКаптады, карагыла биздин жерди. (А.Осмонов)","o":["жөнөкөй","бир өңчөй мүчөлүү","киринди сөздүү","татаал","бир тутумдуу"],"k":1},{"s":"Кулаалыдай салпактап миң жыл жашагыча, барчындай асманга чалкып, бир жыл өмүр сүр.\nЖоломан тебетейин көзүнө баса кийип алыптыр.\nАңгыча жайытта жүргөн мал күтүрөп короого келип калды.\nБул сүйлөмдөрдөгү чакчыл түрмөктөрдүн саны.","o":["3","2","1","4","5"],"k":1},{"s":"Этиштин өзгөчө формалары кайсылар?","o":["чактары, ыңгайлары, мамилелери","атоочтуктар, туунду, тубаса этиштер","чакчылдар, атоочтуктар, кыймыл атоочтор","жактар, көптүк, жекелик сандар","өткөн чак, учур чак, келер чак"],"k":2},{"s":"Кубанганды, сүйүнгөндү, коркконду, чочуганды, өкүнгөндү билдирген сөздөр сырдык сөздүн кайсы түрүнө кирет?","o":["айбанатка карата айтылган сырдык сөздөр","ички сезимди билдирген сырдык сөздөр","турмуш-тиричиликке карата айтылган сырдык сөздөр","айбанатка карата айтылган сырдык сөздөр","адамга карата айтылган сырдык сөздөр\n1 Б\n2 В\n3 А\n4 Б\n5 В\n6 Б\n7 В\n8 Б\n9 Г\n10 В\n11 Б\n12 Г\n13 В\n14 Г\n15 Д\n16 А\n17 В\n18 В\n19 В\n20 Б\n21 Б\n22 Б\n23 Б\n24 В\n25 Г\n26 В\n27 Б\n28 Б\n29 В\n30 Б"],"k":1}],[{"s":"Тиешелүү киринди сөздү кой.\n_____, Толгонай, сен да мени менен сүйлөшкөндөн качкансың?","o":["болжолу","балким","ырас","баамымда","туура"],"k":2},{"s":"Тоосуз, эмгекчил, балалуу, билерман\n-сөздөрү кайсы сөз түркүмүнө өзгөрдү?","o":["сын атоочко","сан атоочко","зат атоочко","ат атоочко","тактоочко"],"k":0},{"s":"Таандык байланышты тап.","o":["акылдуу кыз","конокторду сыйлоо","көрүнгөн тоолор","сенин пикириң","кинодон келүү"],"k":3},{"s":"Аттиң, ошондо эч болбосо жакшлыкча коштошсом эмне?\nСырдык сөздүн кайсы түрүнө кирет?","o":["турмуш-тиричиликке колдонулуучу сырдык сөздөр","ички сезимди билдирүүчү сырдык сөздөр","кайрылуу иретинде айтылган сырдык сөздөр","айбанатка карата айтылган сырдык сөздөр","адамга карата айтылган сырдык сөздөр"],"k":1},{"s":"Киринди, каратма жана сырдык сөздөр эмне үчүн сүйлөмгө мүчө боло албайт?","o":["синтаксистик кызмат аткарбагандыгы үчүн","суроого жооп бере албагандыгы үчүн","лексикалык мааниге ээ болбогондугу үчүн","сүйлөм тутумунда башка сөздөр менен грамматикалык байланышта келбегендиги үчүн","интонациялык жактан өзгөчөлөнүп айтылгандыгы үчүн"],"k":3},{"s":"Дүйнө жүзүндө канча тил бар?","o":["200","3000ге жакын","600","3500","4000"],"k":1},{"s":"Ээ (1) асманда жаркыраган (2) Күн (3) жер кыдырып (4) сен айткын.\nҮтүр кайсы сөздөрдөн кийин коюлат?","o":["1,3,4","2,3","1,2,4","1,2,3,4","1,3"],"k":4},{"s":"Кайран теректер жалбырак төгүп турган кезиң экен.\nБул сүйлөмдө үтүр белгиси кайсы сөздөн кийин келиши керек.","o":["кайран","теректер","жалбырак","турган","үтүр белгиси коюлбайт"],"k":1},{"s":"Эркин сөз айкашын тап.","o":["ызгаардуу кыш келди","жакшы-жаман","оозу менен орок оргон","кымча бел","Гүлмира жакшы"],"k":3},{"s":"Кыз-келиндер ⟦чарчоону билбей⟧, ⟦оюн-күлкүгө батып⟧, эгин талаасында иштей беришти.\nСүйлөмдөгү асты сызылган сөз тизмектеринин синтаксистик кызматы:","o":["чакчыл түрмөк","бышыктооч","аныктооч","толуктооч","ээсиз сүйлөм"],"k":1},{"s":"Э-э, сапар баскан ак булут, нөшөрлөнө төгүлгөн ар бир тамчың менен сен айткын!\nБул сүйлөмдүн ээси:","o":["сапар баскан булут","булут","тамчың","сен","ээсиз сүйлөм"],"k":3},{"s":"Адепти кимден үйрөндүң?\nАдепсизден үйрөндүм.\nБул тексттеги сүйлөмдөргө кандай пунктуациялык белгилер коюлат?","o":["2-сүйлөмдөн мурда сызыкча коюлат","эки сүйлөмгө тең тырмакча коюлат","ар бир сүйлөмдүн алдына сызыкча келет","1-сүйлөмдүн алдына гана сызыкча келет","бардык белгилери жетиштүү"],"k":2},{"s":"Чагылгандын чартылдаганы, шамалдын улуганы, дарыянын шоокуму, куштардын сайраганы ⟦баары⟧ кулагыңа даана угулат.\nАсты сызылган сөзгө кандай белги коюлушу керек?","o":["өзүнөн кийин кош чекит келет","эч кандай белги коюлбайт","өзүнөн мурда сызыкча коюлат","өзүнөн кийин сызыкча келет","эки четинен тең сызыкча менен ажыратылат"],"k":2},{"s":"Орфографиялык жактан туура берилген варианттарды тап.\n1. коллектив, вокзал, түңкү, призидент, таланттуу, жээк\n2. жазуучу, афтор, тоолуу, ар түрдүү, бойок, врач\n3. оорулуу, пациент, йод, килограмм, агроном, процесс\n4. конституция, майор, грамм, циркуль, экология","o":["1-2","3-4","2-4","1-3-4","1-3"],"k":1},{"s":"Шаардын аянтына ⟦жазуучулар⟧ жана ар кыл ⟦өнөрпоздор⟧ чогулушту.\nАсты сызылган сөздөр кандай жол аркылуу жасалды.","o":["синаксистик","морфологиялык","фонетикалык","грамматикалык","семантикалык"],"k":1},{"s":"Түшүндүрмө мүчө катышкан сүйлөмдү тап.","o":["Биз мекенибизге кызмат кылабыз.","Силер, лицейдин окуучулары, эл жүгүн аркалаган инсандардан болгула.","Окуунун алдыңкыларына ыракмат айтабыз.","Жашоодо туу туткан адамым-энем.","Оо, кутмандуу элим, ынтымагыңдан жазбагын!"],"k":1},{"s":"Сөз билүүнүн өзү да улуу керемет.\nСүйлөмдүн баш мүчөлөрүн тап.","o":["ээ-сөз; баяндооч- керемет","ээ-сөз билүүнүн; баяндооч-улуу","ээ-өзү да; баяндооч --керемет","ээ-жок; баяндооч-керемет","ээ-жок; баяндооч-улуу"],"k":2},{"s":"Бышыктоочтук милдетти аткарган сөздөрү бар сүйлөмдү белгиле.\n1. Түз сүйлөп, чынчыл болгун.\n2. Бурмаке бөкчөңдөп калтыраган арык колу менен ооруларга суу берип жүрөт.\n3. Аганы көрүп, ини өсөт.\n4. Айтике баласына жүгүрдү.","o":["1-2-3-4","1-3-4","1-2-3","1","1-4"],"k":0},{"s":"Төмөнкү сүйлөмдө обочолонгон түшүндүрмө мүчө сүйлөмдүн кайсы мүчөсү болот?\nБийик тоолуу көлдүн, касиеттүү Ысык-Көлдүн, өтө эле көп ооруларга даба болорун мурда ким билиптир?","o":["толуктооч","бышыктооч","аныктооч","ээ","баяндоо"],"k":2},{"s":"Грамматиканын синтаксис бөлүмүндө эмнени окуп-үйрөнөбүз?","o":["сөз жасоонун жолдорун","сөз түркүмдөрүнүн жана сөздүн курамын","сөз айкашы жана сүйлөмдү","киринди, каратма сөздү","сөздүн тыбыштык курамын"],"k":2},{"s":"Төмөнкү багынынкы сүйлөмдүн маанилик түрлөрүн аныкта.\nКан жүгүрүп турса, бойго дарт жукпайт.","o":["мезгил, орун","шарт, мезгил","шарт, сыпат","мезгил, себеп","шарт, максат"],"k":1},{"s":"Алтынай, сен балдарды, кыздарды окууга чакыргын, макулбу?\nСүйлөмдө бир өңчөй мүчө кайсы?","o":["Алтынай, сен","кыздарды, балдарды","чакыргын, макулбу","сен, чакыргын, макулбу","бир өңчөй мүчө жок"],"k":1},{"s":"Үкүнүн уясын тапкандай\n-деген фразеологизмдин мааниси кандай?","o":["көрүшкөндөй","корккондой","күткөндөй","чочугандай","кубангандай"],"k":4},{"s":"Чатыр-Көл, Соң-Көл, Ысык-Көл,\nЖеримдин көркү, ардагы.\n-деген ыр саптарында бир өңчөй мүчөнүн саны:","o":["4","5","3","1","2"],"k":1},{"s":"Жоон үндүүлөр катышкан мисалдар:","o":["эне, мээрим, ата, келин","ийгилик, садага, мен, ал","көздөй, эрин, тилдин","баш, оору, үкү, таш","акыл, карагай, жаратылыш, сыноо"],"k":4},{"s":"Тыныш белгилерди колдонуу жөнүндөгү эрежелердин жыйындысы:","o":["орфография","пунктуация","туура жазуу","синтаксис","орфоэпия"],"k":1},{"s":"Тексттин жалпы мазмунун берүүдө кептин кайсы түрлөрү колдонулат?","o":["көркөм, илимий, ой жүгүртүү","ой жүгүртүү, баяндоо","баяндоо, сүрөттөө, ой жүгүртүү","ой жүгүртүү, тезис, далил, тыянак","сүрөттөө, айлана-чөйрөнү сүрөттөө"],"k":2},{"s":"Каратма сөз катышкан сүйлөмдү аныкта.\n1. Ызакул байке, Актан атамды убара кылбай эле коюңуз.\n2. Ээ, асманда жаркыраган күн, жер кыдырып сен айткын.\n3. Улуу ынтымак, күчтүү эмгек таалайдын эшигин кенен ачат, балдар!\n4. Биз жакшы заманда жашап жатабыз, жолдоштор!","o":["1-4","1-2-3-4","1-2","2","3"],"k":1},{"s":"Төмөнкү ыр саптарынан каратма сөздү тап.\nАрнап жаздым бул ырды,\nАрдактуу балдар көбүңө.\nЧынарга чырпык жеткинчек,\nКулак сал, балдар, кебиме!","o":["балдар","көбүңө, кулак сал","ардактуу балдар, балдар","каратма сөз жок","ардактуу балдар"],"k":2},{"s":"Сөз жасоонун канча жолу бар?","o":["фразеологиялык, фонетикалык","морфологиялык, синтаксистик","синтаксистик, лексика-семантикалык","фонетикалык, синтаксистик","баары туура эмес"],"k":1}]];
+const SC = [];
+const SETS = {
+  an: { data: TESTS, key: 'analogy-best', title: 'Аналогиялар' },
+  gr: { data: GR, key: 'gram-best', title: 'Грамматика', min: 35 },
+  sc: { data: SC, key: 'sc-best', title: 'Сүйлөм толуктоо', min: 10 }
+};
+SETS.an.min = 20;
+function SD() { return SETS[cur.s].data; }
+const RC = [];
+const ONLY = 'gr';
+const LET = ['А', 'Б', 'В', 'Г', 'Д'];
+const RC_MIN = 20;
+const app = document.getElementById('app');
+
+let view = 'home';
+let cur = { s: 'an', t: 0, i: 0, ans: [] };      // analogy state
+let filter = 'wrong';
+let rc = null;                           // reading state
+let rcFilter = 'all';
+
+function h(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  if (props) for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') e.className = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (v === true) e.setAttribute(k, '');
+    else if (v !== false && v != null) e.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) {
+    if (k == null || k === false) continue;
+    e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  }
+  return e;
+}
+function gtext(text) {
+  const parts = String(text).split(/⟦|⟧/);
+  return h('span', { class: 'gt' }, parts.map((p, i) => i % 2 ? h('u', null, p) : p));
+}
+function pair(text) {
+  if (cur && cur.s !== 'an') return gtext(text);
+  const i = text.indexOf(' : ');
+  if (i < 0) return h('span', { class: 'pair' }, text);
+  return h('span', { class: 'pair' },
+    h('span', { class: 'pl' }, text.slice(0, i)),
+    h('span', { class: 'pc' }, ':'),
+    h('span', { class: 'pr' }, text.slice(i + 3)));
+}
+function lsGet(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
+function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+function saveBest(key, t, s) { const b = lsGet(key, {}); if (!(b[t] >= s)) { b[t] = s; lsSet(key, b); } }
+function mount(...nodes) { app.replaceChildren(...nodes); }
+function toTop() { window.scrollTo(0, 0); }
+function setView(v) { view = v; document.body.dataset.view = v.startsWith('rc') ? 'rc' : v; }
+function fmt(ms) { const s = Math.ceil(ms / 1000); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
+function stopTimer() {
+  if (rc && rc.iv) { clearInterval(rc.iv); rc.iv = null; }
+  if (cur && cur.iv) { clearInterval(cur.iv); cur.iv = null; }
+}
+
+function renderGate() {
+  stopTimer(); setView('gate');
+  const inp = h('input', { class: 'code', id: 'code', type: 'text', inputmode: 'numeric', autocomplete: 'off', maxlength: '4', pattern: '[0-9]{4}', 'aria-label': 'Төрт орундуу код', placeholder: '0000' });
+  const err = h('p', { class: 'cerr', role: 'alert' });
+  function submit(e) {
+    if (e) e.preventDefault();
+    if (/^[0-9]{4}$/.test(inp.value.trim())) renderHome();
+    else { err.textContent = 'Төрт орундуу сан киргизиңиз (4 цифра).'; inp.focus(); }
+  }
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') submit(e); });
+  inp.addEventListener('input', () => { inp.value = inp.value.replace(/[^0-9]/g, '').slice(0, 4); err.textContent = ''; });
+  mount(h('div', { class: 'gate card' },
+    h('p', { class: 'kicker' }, 'Тест даярдыгы'),
+    h('h1', null, 'Кирүү коду'),
+    h('p', { class: 'lead' }, 'Сайтка кирүү үчүн төрт орундуу сан киргизиңиз. Каалаган төрт цифра болот.'),
+    inp, err,
+    h('button', { class: 'btn', type: 'button', onclick: submit }, 'Кирүү')));
+  inp.focus();
+}
+/* ---------- Home ---------- */
+function renderHome() {
+  if (ONLY !== 'all') { if (ONLY === 'rc') renderRcList(); else renderSetList(ONLY); return; }
+  stopTimer(); setView('home');
+  const aTotal = TESTS.reduce((n, t) => n + t.length, 0);
+  const rTotal = RC.reduce((n, t) => n + t.questions.length, 0);
+  const gTotal = GR.reduce((n, t) => n + t.length, 0);
+  const cTotal = SC.reduce((n, t) => n + t.length, 0);
+  mount(
+    h('header', { class: 'hero' },
+      h('p', { class: 'kicker' }, 'Тест даярдыгы'),
+      h('h1', null, 'Аналогия, окуп түшүнүү, грамматика жана сүйлөм толуктоо'),
+      h('p', null, 'Бөлүмдү тандаңыз. Аналогия, грамматика жана сүйлөм толуктоодо жооп дароо көрүнөт. Убакыт: аналогия 20, грамматика 35, сүйлөм толуктоо 10, окуп түшүнүү ар бир текстке 20 мүнөт.')
+    ),
+    h('div', { class: 'secs' },
+      h('button', { class: 'sec', type: 'button', onclick: () => renderSetList('an') },
+        h('h2', null, 'Аналогиялар'),
+        h('p', { class: 'stats' }, h('span', null, TESTS.length + ' тест'), h('span', null, aTotal + ' суроо'), h('span', null, '20 мүнөт / тест')),
+        h('p', { class: 'desc' }, 'Суроолор аралаштырылган. Ар бир жоопко туура жооп жана логикалык түшүндүрмө чыгат.'),
+        h('span', { class: 'btn' }, 'Тесттерди ачуу')),
+      h('button', { class: 'sec', type: 'button', onclick: renderRcList },
+        h('h2', null, 'Окуп түшүнүү'),
+        h('p', { class: 'stats' }, h('span', null, RC.length + ' текст'), h('span', null, rTotal + ' суроо'), h('span', null, RC_MIN + ' мүнөт / текст')),
+        h('p', { class: 'desc' }, 'Тексттер сап номерлери менен берилген, суроолор файлдагы тартип боюнча. Аягында туура жана ката жооптордун талдоосу.'),
+        h('span', { class: 'btn' }, 'Тексттерди ачуу')),
+      h('button', { class: 'sec', type: 'button', onclick: () => renderSetList('gr') },
+        h('h2', null, 'Грамматика'),
+        h('p', { class: 'stats' }, h('span', null, GR.length + ' тест'), h('span', null, gTotal + ' суроо'), h('span', null, '35 мүнөт / тест')),
+        h('p', { class: 'desc' }, 'Ар бир тест 30 суроодон турат. Жооп дароо көрүнөт.'),
+        h('span', { class: 'btn' }, 'Тесттерди ачуу')),
+      h('button', { class: 'sec', type: 'button', onclick: () => renderSetList('sc') },
+        h('h2', null, 'Сүйлөм толуктоо'),
+        h('p', { class: 'stats' }, h('span', null, SC.length + ' тест'), h('span', null, cTotal + ' суроо'), h('span', null, '10 мүнөт / тест')),
+        h('p', { class: 'desc' }, 'Ар бир тест 10 суроодон турат. Бош орундарга туура сөздөрдү танда.'),
+        h('span', { class: 'btn' }, 'Тесттерди ачуу'))
+    )
+  );
+  toTop();
+}
+
+/* ---------- Analogies ---------- */
+function renderSetList(k) {
+  stopTimer(); setView('analogy-list');
+  const S = SETS[k], D = S.data;
+  const best = lsGet(S.key, {});
+  const total = D.reduce((n, t) => n + t.length, 0);
+  mount(
+    ONLY === 'all' ? h('div', { class: 'bar' }, h('button', { class: 'link', type: 'button', onclick: renderHome }, 'Башкы бет')) : null,
+    h('header', { class: 'list-head' },
+      h('h1', null, S.title),
+      h('p', null, S.min + ' мүнөт. ' + (k === 'an' ? total + ' суроо тестке бөлүнгөн. 1–5 тест биринчи 100 суроо, 6–' + D.length + ' тест кийинки суроолор.' : total + ' суроо ' + D.length + ' тестке бөлүнгөн.'))),
+    h('div', { class: 'tiles' }, D.map((T, t) =>
+      h('div', { class: 'tile' },
+        h('div', null, h('p', { class: 'kicker' }, 'Тест'), h('p', { class: 'num' }, String(t + 1))),
+        h('p', { class: 'meta' }, T.length + ' суроо · ' + S.min + ' мүнөт'),
+        h('p', { class: 'best' }, best[t] != null ? 'Мыкты жыйынтык: ' + best[t] + ' / ' + T.length : 'Али тапшырган жоксуз'),
+        h('button', { class: 'btn', type: 'button', onclick: () => startTest(t, k) }, best[t] != null ? 'Кайра тапшыруу' : 'Баштоо')
+      ))),
+    h('p', { class: 'legend' },
+      h('b', null, 'Эскертүү. '),
+      'Жооп ачкычы сиз берген тизмеден алынды. Айрым суроолордо ачкыч логикага туура келбей калышы мүмкүн, андайларда түшүндүрмөнүн астында сары эскертүү чыгат.')
+  );
+  toTop();
+}
+function renderAnalogyList() { renderSetList(cur.s || 'an'); }
+function startTest(t, k) { k = k || cur.s || 'an'; cur = { s: k, t, i: 0, ans: Array(SETS[k].data[t].length).fill(null), start: Date.now(), deadline: Date.now() + SETS[k].min * 60000, finished: false, iv: null }; filter = 'wrong'; renderQuiz(); toTop();
+  cur.iv = setInterval(qtick, 500);
+}
+function qtick() {
+  if (!cur || cur.finished) { stopTimer(); return; }
+  const left = Math.max(0, cur.deadline - Date.now());
+  const el = document.getElementById('qtimer');
+  if (el) { el.textContent = fmt(left); el.className = 'timer sm' + (left < 60000 ? ' bad' : left < 300000 ? ' warn' : ''); }
+  if (left <= 0) { cur.timeout = true; renderResult(); toTop(); }
+}
+function pick(j) { if (cur.ans[cur.i] !== null) return; cur.ans[cur.i] = j; renderQuiz(true); }
+function go(d) {
+  const n = cur.i + d;
+  if (n < 0) return;
+  if (n >= SD()[cur.t].length) { renderResult(); return; }
+  cur.i = n; renderQuiz(); toTop();
+}
+function renderQuiz(justAnswered) {
+  setView('quiz');
+  const T = SD()[cur.t], q = T[cur.i], a = cur.ans[cur.i], done = a !== null, ok = a === q.k;
+  const last = cur.i === T.length - 1;
+  const answeredCount = cur.ans.filter(x => x !== null).length;
+  const dots = h('div', { class: 'dots' }, T.map((x, j) => {
+    const s = cur.ans[j];
+    const cls = 'dot' + (j === cur.i ? ' cur' : '') + (s === null ? '' : (s === x.k ? ' ok' : ' bad'));
+    return h('button', { class: cls, type: 'button', 'aria-label': 'Суроо ' + (j + 1), 'aria-current': j === cur.i ? 'true' : null, onclick: () => { cur.i = j; renderQuiz(); } }, String(j + 1));
+  }));
+  const opts = h('div', { class: 'opts', role: 'group', 'aria-label': 'Жооп варианттары' }, q.o.map((txt, j) => {
+    let cls = 'opt', tag = null;
+    if (done) {
+      cls += ' locked';
+      if (j === q.k) { cls += ' ok'; tag = j === a ? 'Сиздин жооп, туура' : 'Туура жооп'; }
+      else if (j === a) { cls += ' bad'; tag = 'Сиздин жооп, ката'; }
+      else cls += ' dim';
+    }
+    return h('button', { class: cls, type: 'button', 'aria-disabled': done ? 'true' : null, onclick: () => pick(j) },
+      h('span', { class: 'ltr' }, LET[j]), pair(txt), tag ? h('span', { class: 'tag' }, tag) : null);
+  }));
+  let fb = null;
+  if (done) {
+    fb = h('div', { class: 'fb ' + (ok ? 'ok' : 'bad'), role: 'status', tabindex: '-1', id: 'fb' },
+      h('p', { class: 'verdict' }, ok ? 'Туура!' : 'Ката. Туура жооп: ' + LET[q.k] + ') ' + q.o[q.k]),
+      q.e ? h('p', { class: 'why-h' }, 'Эмне үчүн?') : null,
+      q.r ? h('p', { class: 'rel' }, 'Байланыш: ' + q.r) : null,
+      q.e ? h('p', { class: 'why' }, q.e) : null,
+      q.w ? h('p', { class: 'note warn' }, h('b', null, 'Көңүл буруңуз. '), q.w) : null,
+      q.i ? h('p', { class: 'note' }, h('b', null, 'Эскертүү. '), q.i) : null,
+      q.t ? h('p', { class: 'note' }, h('b', null, 'Текст оңдолду. '), q.t) : null);
+  }
+  mount(
+    h('div', { class: 'bar' },
+      h('button', { class: 'link', type: 'button', onclick: renderAnalogyList }, 'Тесттер тизмеси'),
+      h('p', { class: 'count' }, 'Тест ' + (cur.t + 1) + ' · ' + (cur.i + 1) + ' / ' + T.length),
+      cur.finished ? null : h('div', { class: 'timer sm' + (cur.deadline - Date.now() < 60000 ? ' bad' : cur.deadline - Date.now() < 300000 ? ' warn' : ''), id: 'qtimer', role: 'timer', 'aria-label': 'Калган убакыт' }, fmt(Math.max(0, cur.deadline - Date.now())))),
+    dots,
+    h('section', { class: 'card' + (cur.s !== 'an' ? ' gr' : '') },
+      h('p', { class: 'eyebrow' }, 'Суроо ' + (cur.i + 1) + (q.n ? ' · булактагы № ' + q.n : '')),
+      cur.s === 'an' ? h('p', { class: 'lead' }, 'Биринчи жуптун ортосундагы байланышты тап. Ошого окшош жупту танда.') : null,
+      h('div', { class: 'stem' }, pair(q.s)),
+      opts, fb,
+      h('div', { class: 'nav' },
+        h('button', { class: 'btn ghost', type: 'button', disabled: cur.i === 0, onclick: () => go(-1) }, 'Мурунку'),
+        h('button', { class: 'btn', type: 'button', onclick: () => go(1) },
+          last ? (answeredCount === T.length ? 'Жыйынтыкты көрүү' : 'Жыйынтык (' + (T.length - answeredCount) + ' жоопсуз)') : 'Кийинки суроо')))
+  );
+  if (justAnswered) {
+    const el = document.getElementById('fb');
+    if (el) {
+      el.focus({ preventScroll: true });
+      const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      el.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'nearest' });
+    }
+  }
+}
+function renderResult() {
+  if (!cur.finished) { cur.finished = true; cur.used = Math.min(SETS[cur.s].min * 60000, Date.now() - cur.start); }
+  stopTimer();
+  setView('result');
+  const T = SD()[cur.t];
+  const score = T.reduce((n, q, j) => n + (cur.ans[j] === q.k ? 1 : 0), 0);
+  const skipped = cur.ans.filter(x => x === null).length;
+  const pct = Math.round(score / T.length * 100);
+  saveBest(SETS[cur.s].key, cur.t, score);
+  const msg = pct >= 90 ? 'Эң сонун натыйжа.' : pct >= 70 ? 'Жакшы натыйжа. Каталарды карап чыгыңыз.' : pct >= 50 ? 'Орточо. Каталарды түшүндүрмөсү менен кайра окуп чыгыңыз.' : 'Кайра аракет кылыңыз. Түшүндүрмөлөр жардам берет.';
+  const list = h('div', { class: 'rev' });
+  function fill() {
+    list.replaceChildren(...T.map((q, j) => ({ q, j })).filter(({ q, j }) => filter === 'all' || cur.ans[j] !== q.k).map(({ q, j }) => {
+      const a = cur.ans[j], ok = a === q.k;
+      const chip = a === null ? h('span', { class: 'chip skip' }, 'Жооп берилген жок') : h('span', { class: 'chip ' + (ok ? 'ok' : 'bad') }, ok ? 'Туура' : 'Ката');
+      return h('details', { class: 'item', open: !ok },
+        h('summary', null, h('span', { class: 'qn' }, String(j + 1)), pair(q.s), chip),
+        h('div', { class: 'body' },
+          h('div', { class: 'ans' },
+            a !== null && !ok ? h('p', null, h('b', null, 'Сиздин жооп: '), LET[a] + ') ', pair(q.o[a])) : null,
+            h('p', null, h('b', null, 'Туура жооп: '), LET[q.k] + ') ', pair(q.o[q.k]))),
+          q.r ? h('p', { class: 'rel' }, 'Байланыш: ' + q.r) : null,
+          h('p', { class: 'why' }, q.e),
+          q.w ? h('p', { class: 'note warn' }, h('b', null, 'Көңүл буруңуз. '), q.w) : null,
+          q.i ? h('p', { class: 'note' }, h('b', null, 'Эскертүү. '), q.i) : null,
+          q.t ? h('p', { class: 'note' }, h('b', null, 'Текст оңдолду. '), q.t) : null));
+    }));
+    if (!list.children.length) list.append(h('p', { class: 'note' }, 'Каталар жок. Бардык суроого туура жооп бердиңиз.'));
+  }
+  const tabWrong = h('button', { class: 'tab', type: 'button', onclick: () => set('wrong') }, 'Каталар');
+  const tabAll = h('button', { class: 'tab', type: 'button', onclick: () => set('all') }, 'Бардык суроолор');
+  function set(f) { filter = f; tabWrong.setAttribute('aria-pressed', String(f === 'wrong')); tabAll.setAttribute('aria-pressed', String(f === 'all')); fill(); }
+  set(filter);
+  mount(
+    h('div', { class: 'bar' }, h('button', { class: 'link', type: 'button', onclick: renderAnalogyList }, 'Тесттер тизмеси'), h('p', { class: 'count' }, 'Тест ' + (cur.t + 1))),
+    h('section', { class: 'score' },
+      h('p', { class: 'kicker' }, 'Жыйынтык'),
+      h('p', { class: 'big' }, score + ' / ' + T.length),
+      h('div', { class: 'meter', role: 'img', 'aria-label': pct + ' пайыз' }, h('i', { style: 'width:' + pct + '%' })),
+      h('p', null, pct + '% туура. ' + msg + (skipped ? ' Жооп берилбеген суроолор: ' + skipped + '.' : '')),
+      h('div', { class: 'facts' }, h('span', { class: 'fact' }, 'Убакыт: ' + fmt(cur.used) + ' / ' + SETS[cur.s].min + ':00'), cur.timeout ? h('span', { class: 'fact' }, 'Убакыт бүттү') : null),
+      h('div', { class: 'actions' },
+        h('button', { class: 'btn', type: 'button', onclick: () => startTest(cur.t) }, 'Кайра тапшыруу'),
+        h('button', { class: 'btn ghost', type: 'button', onclick: () => { cur.i = 0; renderQuiz(); toTop(); } }, 'Суроолорго кайтуу'),
+        cur.t < SD().length - 1 ? h('button', { class: 'btn ghost', type: 'button', onclick: () => startTest(cur.t + 1) }, 'Кийинки тест') : null)),
+    h('div', { class: 'tabs' }, tabWrong, tabAll),
+    list);
+  toTop();
+}
+
+/* ---------- Reading comprehension ---------- */
+function renderRcList() {
+  stopTimer(); setView('rc-list');
+  const best = lsGet('rc-best', {});
+  const total = RC.reduce((n, t) => n + t.questions.length, 0);
+  mount(
+    ONLY === 'all' ? h('div', { class: 'bar' }, h('button', { class: 'link', type: 'button', onclick: renderHome }, 'Башкы бет')) : null,
+    h('header', { class: 'list-head' },
+      h('h1', null, 'Окуп түшүнүү'),
+      h('p', null, RC.length + ' текст, ' + total + ' суроо. Ар бир текстке ' + RC_MIN + ' мүнөт берилет.')),
+    h('div', { class: 'tiles wide' }, RC.map((t, i) =>
+      h('div', { class: 'tile' },
+        h('div', null, h('p', { class: 'kicker' }, 'Текст'), h('p', { class: 'num' }, String(i + 1))),
+        h('h3', null, t.title),
+        h('p', { class: 'meta' }, t.questions.length + ' суроо · ' + RC_MIN + ' мүнөт'),
+        h('p', { class: 'best' }, best[i] != null ? 'Мыкты жыйынтык: ' + best[i] + ' / ' + t.questions.length : 'Али тапшырган жоксуз'),
+        h('button', { class: 'btn', type: 'button', onclick: () => renderRcIntro(i) }, best[i] != null ? 'Кайра тапшыруу' : 'Ачуу')
+      )))
+  );
+  toTop();
+}
+function renderRcIntro(i) {
+  stopTimer(); setView('rc-intro');
+  const t = RC[i];
+  mount(
+    h('div', { class: 'bar' }, h('button', { class: 'link', type: 'button', onclick: renderRcList }, 'Тексттер тизмеси'), h('p', { class: 'count' }, 'Текст ' + (i + 1))),
+    h('section', { class: 'card intro-card' },
+      h('p', { class: 'eyebrow' }, 'Окуп түшүнүү · текст ' + (i + 1)),
+      h('h1', null, t.title),
+      t.source ? h('p', { class: 'psrc' }, t.source) : null,
+      h('div', { class: 'facts' },
+        h('span', { class: 'fact' }, t.questions.length + ' суроо'),
+        h('span', { class: 'fact' }, RC_MIN + ' мүнөт'),
+        t.passages.length > 1 ? h('span', { class: 'fact' }, t.passages.length + ' үзүндү') : null),
+      h('ul', { class: 'rules' },
+        h('li', null, 'Таймер «Баштоо» баскычын басканда башталат.'),
+        h('li', null, 'Суроолор файлдагы тартип боюнча берилген. Текстте саптар номерленген, суроолор ошол номерлерге шилтеме жасайт.'),
+        h('li', null, 'Жоопту аяктаганга чейин өзгөртсөңүз болот. Убакыт бүткөндө тест автоматтык түрдө аяктайт.'),
+        h('li', null, 'Аягында ар бир суроонун туура жана ката жообу эмне үчүн экени талдоо менен чыгат.')),
+      h('div', { class: 'actions' },
+        h('button', { class: 'btn', type: 'button', onclick: () => startRc(i) }, 'Баштоо'))));
+  toTop();
+}
+
+/* passage rendering */
+function tokens(s) { return s.toLowerCase().split(/[\s«»"“”(),.;:!?…—–]+/).filter(Boolean); }
+function flowParas(p) {
+  const L = p.lines;
+  const vocab = new Set();
+  L.forEach(l => tokens(l[1]).forEach(w => vocab.add(w)));
+  const lens = L.map(l => l[1].length).sort((a, b) => a - b);
+  const med = lens[Math.floor(lens.length / 2)] || 40;
+  const paras = []; let parts = [];
+  const flush = () => { if (parts.length) { paras.push(parts); parts = []; } };
+  L.forEach((l, idx) => {
+    const n = l[0], txt = l[1];
+    const prev = idx ? L[idx - 1][1] : '';
+    let glue = ' ';
+    if (idx && /\S-$/.test(prev)) {
+      const A = (prev.match(/([^\s«»"(]+)-$/) || [])[1] || '';
+      const B = (txt.match(/^[«"(]*([^\s,.;:!?»")]+)/) || [])[1] || '';
+      const al = A.toLowerCase(), bl = B.toLowerCase();
+      if (vocab.has(al + '-' + bl)) glue = 'keep';
+      else if (vocab.has(al + bl)) glue = 'drop';
+      else if (bl.length <= 3 || /^[а-яөүң]/.test(B) && !vocab.has(bl)) glue = 'drop';
+      else glue = 'keep';
+    }
+    if (idx) {
+      if (glue === 'drop') { const last = parts[parts.length - 1]; if (typeof last === 'string') parts[parts.length - 1] = last.replace(/-$/, ''); }
+      else if (glue === 'keep') { /* join without space */ }
+      else { const last = parts[parts.length - 1]; if (typeof last === 'string') parts[parts.length - 1] = last + ' '; else parts.push(' '); }
+    }
+    if (n) parts.push({ n });
+    parts.push(txt);
+    if (/[.?!…»)]$/.test(txt.trim()) && txt.length < med * 0.8) flush();
+  });
+  flush();
+  return paras;
+}
+function passageEl(p, mode) {
+  const head = [];
+  if (p.label) head.push(h('p', { class: 'plabel' }, p.label));
+  if (p.source) head.push(h('p', { class: 'psrc' }, p.source));
+  if (p.note) head.push(h('p', { class: 'pnote' }, p.note));
+  let body;
+  if (mode === 'lines') {
+    body = h('div', { class: 'lines', tabindex: '0', role: 'region', 'aria-label': 'Текст, саптар боюнча' },
+      p.lines.map(l => h('div', { class: 'ln' }, h('span', { class: 'num' }, l[0] ? String(l[0]) : ''), h('span', { class: 'tx' }, l[1]))));
+  } else {
+    body = h('div', { class: 'flow' }, flowParas(p).map(parts =>
+      h('p', null, parts.map(x => typeof x === 'string' ? x : h('sup', { class: 'mk', 'aria-label': x.n + '-сап' }, String(x.n))))));
+  }
+  return h('div', { class: 'passage' }, head, body);
+}
+function textPane(t, onMode) {
+  const mode = rcMode();
+  const holder = h('div', { class: 'ptext' });
+  function draw() {
+    const m = rcMode();
+    holder.replaceChildren(...t.passages.map(p => passageEl(p, m)));
+  }
+  draw();
+  return h('section', { class: 'pane-text' },
+    h('div', { class: 'tools' }, h('span', { class: 'lbl' }, 'Текст')),
+    h('h2', { class: 'ptitle' }, t.title),
+    t.source ? h('p', { class: 'psrc' }, t.source) : null,
+    t.intro ? h('p', { class: 'pint' }, t.intro) : null,
+    holder);
+}
+function rcMode() {
+  return 'lines';
+}
+function rcModeOld() {
+  const m = lsGet('rc-mode', null);
+  if (m === 'lines' || m === 'flow') return m;
+  return window.matchMedia('(max-width: 599px)').matches ? 'flow' : 'lines';
+}
+
+function startRc(i) {
+  stopTimer();
+  rc = { t: i, ans: Array(RC[i].questions.length).fill(null), start: Date.now(), deadline: Date.now() + RC_MIN * 60000, finished: false, confirming: false, pane: 'text', iv: null };
+  renderRcQuiz(); toTop();
+  rc.iv = setInterval(tick, 500);
+}
+function tick() {
+  if (!rc || rc.finished) { stopTimer(); return; }
+  const left = Math.max(0, rc.deadline - Date.now());
+  const el = document.getElementById('timer');
+  if (el) {
+    el.textContent = fmt(left);
+    el.className = 'timer' + (left < 60000 ? ' bad' : left < 300000 ? ' warn' : '');
+  }
+  if (left <= 0) finishRc(true);
+}
+function measureHead() {
+  const hd = document.getElementById('rchead');
+  if (hd) document.documentElement.style.setProperty('--head-h', hd.offsetHeight + 'px');
+}
+function rcAnswered() { return rc.ans.filter(x => x !== null).length; }
+function renderRcQuiz() {
+  setView('rc-quiz');
+  const t = RC[rc.t], N = t.questions.length;
+  const body = h('div', { class: 'rc-body', 'data-pane': rc.pane });
+  const qpane = h('section', { class: 'pane-q' });
+  const qcards = t.questions.map((q, qi) => {
+    const btns = q.o.map((txt, j) => h('button', { class: 'ropt', type: 'button', 'aria-pressed': 'false', onclick: () => rcPick(qi, j) },
+      h('span', { class: 'ltr' }, LET[j]), h('span', { class: 'ot' }, txt)));
+    const card = h('div', { class: 'qcard', id: 'q' + qi },
+      h('div', { class: 'qhead' }, h('span', { class: 'qbadge' }, String(qi + 1)), h('span', { class: 'eyebrow' }, 'Суроо ' + (qi + 1))),
+      h('p', { class: 'qstem' }, q.q),
+      h('div', { class: 'ropts', role: 'group', 'aria-label': 'Жооп варианттары' }, btns));
+    card._btns = btns;
+    return card;
+  });
+  qpane.append(...qcards);
+  const swText = h('button', { type: 'button', 'aria-pressed': String(rc.pane === 'text'), onclick: () => setPane('text') }, 'Текст');
+  const swQ = h('button', { type: 'button', id: 'swq', 'aria-pressed': String(rc.pane === 'q'), onclick: () => setPane('q') }, 'Суроолор');
+  function setPane(p) {
+    rc.pane = p; body.dataset.pane = p;
+    swText.setAttribute('aria-pressed', String(p === 'text')); swQ.setAttribute('aria-pressed', String(p === 'q'));
+    toTop();
+  }
+  const finishBtn = h('button', { class: 'btn sm', type: 'button', id: 'finbtn', onclick: onFinish }, 'Аяктоо');
+  const confirmHolder = h('div', { id: 'confirm' });
+  const exitBtn = h('button', { class: 'link', type: 'button', onclick: () => {
+    if (!rc.exitAsk) { rc.exitAsk = true; exitBtn.textContent = 'Чыгуу? Дагы бир жолу басыңыз'; setTimeout(() => { if (rc) { rc.exitAsk = false; exitBtn.textContent = 'Чыгуу'; } }, 4000); return; }
+    stopTimer(); renderRcList();
+  } }, 'Чыгуу');
+  const left = Math.max(0, rc.deadline - Date.now());
+  const head = h('header', { class: 'rc-head', id: 'rchead' },
+    h('div', { class: 'rc-row' },
+      exitBtn,
+      h('p', { class: 'count', id: 'cnt' }),
+      h('div', { class: 'timer' + (left < 60000 ? ' bad' : left < 300000 ? ' warn' : ''), id: 'timer', role: 'timer', 'aria-label': 'Калган убакыт' }, fmt(left)),
+      finishBtn),
+    h('p', { class: 'rc-title' }, 'Текст ' + (rc.t + 1) + '. ' + t.title),
+    h('div', { class: 'rc-switch' }, h('div', { class: 'seg', role: 'group', 'aria-label': 'Бөлүк' }, swText, swQ)),
+    confirmHolder);
+  body.append(textPane(t), qpane);
+  mount(head, body);
+  rc.ui = { qcards, finishBtn, confirmHolder };
+  updateRcCounts();
+  qcards.forEach((c, qi) => refreshCard(qi));
+  measureHead();
+}
+function updateRcCounts() {
+  const N = RC[rc.t].questions.length, a = rcAnswered();
+  const c = document.getElementById('cnt'); if (c) c.textContent = a + ' / ' + N + ' жооп';
+  const sq = document.getElementById('swq'); if (sq) sq.textContent = 'Суроолор · ' + a + '/' + N;
+}
+function refreshCard(qi) {
+  const card = rc.ui.qcards[qi], a = rc.ans[qi];
+  card.classList.toggle('done', a !== null);
+  card._btns.forEach((b, j) => { const on = a === j; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', String(on)); });
+}
+function rcPick(qi, j) {
+  if (rc.finished) return;
+  rc.ans[qi] = rc.ans[qi] === j ? null : j;
+  refreshCard(qi); updateRcCounts();
+  if (rc.confirming) { rc.confirming = false; rc.ui.confirmHolder.replaceChildren(); measureHead(); }
+}
+function onFinish() {
+  const N = RC[rc.t].questions.length, left = N - rcAnswered();
+  if (left > 0 && !rc.confirming) {
+    rc.confirming = true;
+    const idx = rc.ans.map((a, i) => a === null ? i + 1 : null).filter(Boolean).join(', ');
+    rc.ui.confirmHolder.replaceChildren(h('div', { class: 'confirm', role: 'alert' },
+      h('p', null, 'Жооп берилбеген суроолор: ' + idx + '. Аяктайсызбы?'),
+      h('button', { class: 'btn sm ghost', type: 'button', onclick: () => { rc.confirming = false; rc.ui.confirmHolder.replaceChildren(); measureHead(); } }, 'Улантуу'),
+      h('button', { class: 'btn sm', type: 'button', onclick: () => finishRc(false) }, 'Аяктоо')));
+    measureHead();
+    return;
+  }
+  finishRc(false);
+}
+function isOk(q, a) { return a !== null && (a === q.k || (q.alt || []).includes(a)); }
+function finishRc(timeout) {
+  if (!rc || rc.finished) return;
+  rc.finished = true; stopTimer();
+  rc.used = Math.min(RC_MIN * 60000, Date.now() - rc.start);
+  rc.timeout = timeout;
+  rc.score = RC[rc.t].questions.reduce((n, q, j) => n + (isOk(q, rc.ans[j]) ? 1 : 0), 0);
+  saveBest('rc-best', rc.t, rc.score);
+  rcFilter = 'all';
+  renderRcResult(); toTop();
+}
+function optReview(q, j, a) {
+  const alt = (q.alt || []).includes(j), key = j === q.k;
+  const correct = key || alt;
+  let cls = 'ropt', tag = null;
+  if (correct) {
+    cls += ' ok';
+    if ((q.alt || []).length) tag = key ? (a === j ? 'Сиздин жооп. Ачкычтагы жооп' : 'Ачкычтагы жооп') : (a === j ? 'Сиздин жооп. Текст боюнча туура' : 'Текст боюнча туура');
+    else tag = a === j ? 'Сиздин жооп, туура' : 'Туура жооп';
+  } else if (a === j) { cls += ' bad'; tag = 'Сиздин жооп, ката'; }
+  return h('div', { class: cls },
+    h('span', { class: 'ltr' }, LET[j]), h('span', { class: 'ot' }, q.o[j]),
+    tag ? h('span', { class: 'tag' }, tag) : null,
+    q.x[j] ? h('span', { class: 'rs' }, q.x[j]) : null);
+}
+function renderRcResult() {
+  setView('rc-result');
+  const t = RC[rc.t], N = t.questions.length, score = rc.score;
+  const pct = Math.round(score / N * 100);
+  const skipped = rc.ans.filter(x => x === null).length;
+  const msg = pct >= 90 ? 'Эң сонун натыйжа.' : pct >= 70 ? 'Жакшы натыйжа. Каталарды талдоодон карап чыгыңыз.' : pct >= 50 ? 'Орточо. Ката кеткен суроолордогу түшүндүрмөнү окуңуз.' : 'Тексттин саптарына кайрылып, талдоону окуңуз.';
+  const list = h('div', { class: 'rev' });
+  function fill() {
+    const items = t.questions.map((q, j) => ({ q, j })).filter(({ q, j }) => rcFilter === 'all' || !isOk(q, rc.ans[j]));
+    list.replaceChildren(...items.map(({ q, j }) => {
+      const a = rc.ans[j], ok = isOk(q, a);
+      const chip = a === null ? h('span', { class: 'chip skip' }, 'Жооп берилген жок') : h('span', { class: 'chip ' + (ok ? 'ok' : 'bad') }, ok ? 'Туура' : 'Ката');
+      const short = q.q.split('\n')[0];
+      return h('details', { class: 'item', open: !ok },
+        h('summary', null, h('span', { class: 'qn' }, String(j + 1)), h('span', { class: 'qstem' }, short.length > 110 ? short.slice(0, 107) + '…' : short), chip),
+        h('div', { class: 'body' },
+          h('p', { class: 'qstem' }, q.q),
+          h('div', { class: 'ropts' }, q.o.map((_, k) => optReview(q, k, a))),
+          h('div', { class: 'exp' }, h('p', { class: 'why-h' }, 'Эмне үчүн?'), h('p', { class: 'why' }, q.e)),
+          q.w ? h('p', { class: 'note warn' }, h('b', null, 'Көңүл буруңуз. '), q.w) : null,
+          q.i ? h('p', { class: 'note' }, h('b', null, 'Эскертүү. '), q.i) : null));
+    }));
+    if (!list.children.length) list.append(h('p', { class: 'note' }, 'Каталар жок. Бардык суроого туура жооп бердиңиз.'));
+  }
+  const tabAll = h('button', { class: 'tab', type: 'button', onclick: () => set('all') }, 'Бардык суроолор');
+  const tabWrong = h('button', { class: 'tab', type: 'button', onclick: () => set('wrong') }, 'Каталар жана жоопсуздар');
+  function set(f) { rcFilter = f; tabAll.setAttribute('aria-pressed', String(f === 'all')); tabWrong.setAttribute('aria-pressed', String(f === 'wrong')); fill(); }
+  set(rcFilter);
+  const okList = t.questions.map((q, j) => isOk(q, rc.ans[j]) ? j + 1 : null).filter(Boolean);
+  const badList = t.questions.map((q, j) => !isOk(q, rc.ans[j]) ? j + 1 : null).filter(Boolean);
+  mount(
+    h('div', { class: 'bar' }, h('button', { class: 'link', type: 'button', onclick: renderRcList }, 'Тексттер тизмеси'), h('p', { class: 'count' }, 'Текст ' + (rc.t + 1))),
+    h('section', { class: 'score' },
+      h('p', { class: 'kicker' }, 'Жыйынтык · ' + t.title),
+      h('p', { class: 'big' }, score + ' / ' + N),
+      h('div', { class: 'meter', role: 'img', 'aria-label': pct + ' пайыз' }, h('i', { style: 'width:' + pct + '%' })),
+      h('p', null, pct + '% туура. ' + msg),
+      h('div', { class: 'facts' },
+        h('span', { class: 'fact' }, 'Убакыт: ' + fmt(rc.used) + ' / ' + RC_MIN + ':00'),
+        rc.timeout ? h('span', { class: 'fact' }, 'Убакыт бүттү') : null,
+        skipped ? h('span', { class: 'fact' }, 'Жоопсуз: ' + skipped) : null),
+      h('p', { class: 'meta' }, 'Туура: ' + (okList.join(', ') || '—') + '. Ката же жоопсуз: ' + (badList.join(', ') || '—') + '.'),
+      h('div', { class: 'actions' },
+        h('button', { class: 'btn', type: 'button', onclick: () => startRc(rc.t) }, 'Кайра тапшыруу'),
+        rc.t < RC.length - 1 ? h('button', { class: 'btn ghost', type: 'button', onclick: () => renderRcIntro(rc.t + 1) }, 'Кийинки текст') : null,
+        h('button', { class: 'btn ghost', type: 'button', onclick: renderRcList }, 'Тексттер тизмеси'))),
+    h('details', { class: 'review-text' },
+      h('summary', null, 'Текстти кайра окуу (сап номерлери менен)'),
+      textPane(t)),
+    h('h2', { class: 'ptitle' }, 'Талдоо'),
+    h('div', { class: 'tabs' }, tabAll, tabWrong),
+    list);
+}
+
+window.addEventListener('resize', () => { if (view === 'rc-quiz') measureHead(); });
+renderGate();
+</script>
+</html>
